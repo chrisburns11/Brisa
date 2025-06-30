@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ tournament }} - Tee Times</title>
+</head>
+<body>
+    <h1>{{ tournament }} - Available Tee Times</h1>
+    {% for tee_time in tee_times %}
+        <div>
+            <strong>{{ tee_time.day }} - {{ tee_time.time }}</strong><br>
+            {% if tee_time.players|length < 4 %}
+                <a href="{{ url_for('register', tee_time_id=tee_time.id) }}">Register</a>
+            {% else %}
+                Full
+            {% endif %}
+            <br>
+            Registered Players:
+            <ul>
+                {% for player in tee_time.players %}
+                    <li>{{ player.first_name }} {{ player.last_name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <hr>
+    {% endfor %}
+    <a href="/">Back to Tournament Selection</a>
+</body>
+</html>

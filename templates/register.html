@@ -1,0 +1,20 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register for Tee Time</title>
+</head>
+<body>
+    <h1>Register for {{ tee_time.tournament }} - {{ tee_time.day }} at {{ tee_time.time }}</h1>
+    <form method="POST">
+        First Name: <input type="text" name="first_name" required><br>
+        Last Name: <input type="text" name="last_name" required><br>
+        Phone: <input type="text" name="phone" required><br>
+        Email: <input type="email" name="email" required><br>
+        <label>
+            <input type="checkbox" name="sms_opt_in"> Would you like to receive your confirmation via text message?
+        </label><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
