@@ -3,18 +3,13 @@
 <head>
     <title>Brisa - Tee Time Registration</title>
     <style>
-        body, html {
+        html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            overflow: hidden;
+            height: 100%;
             font-family: Arial, sans-serif;
             color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            position: relative;
+            overflow: hidden;
         }
         video#bgVideo {
             position: fixed;
@@ -29,7 +24,26 @@
         .section {
             display: none;
             text-align: center;
-            max-width: 90%;
+            height: 100%;
+            overflow-y: scroll;
+            padding: 20px 0;
+            box-sizing: border-box;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+        .section::-webkit-scrollbar {
+            width: 4px;
+        }
+        .section::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .section::-webkit-scrollbar-thumb {
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            visibility: hidden;
+        }
+        .section.scrolling::-webkit-scrollbar-thumb {
+            visibility: visible;
         }
         .active {
             display: block;
@@ -45,9 +59,10 @@
             cursor: pointer;
             display: inline-block;
             text-decoration: none;
-        }
-        .button:hover {
-            background-color: rgba(0,0,0,0.7);
+            white-space: nowrap;
+            min-width: 120px;
+            text-align: center;
+            box-sizing: border-box;
         }
         .tab-container {
             display: flex;
@@ -69,6 +84,13 @@
         .tee-time-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            justify-items: center;
+        }
+        .tournament-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             gap: 10px;
         }
         .full-text {
@@ -85,9 +107,11 @@
 
 <div id="home" class="section active">
     <h1>Select a Tournament</h1>
-    <div class="button" onclick="showTeeTimes('U.S. Open')">U.S. Open</div>
-    <div class="button" onclick="showTeeTimes('U.S. Women's Amateur')">U.S. Women's Amateur</div>
-    <div class="button" onclick="showTeeTimes('U.S. Amateur')">U.S. Amateur</div>
+    <div class="tournament-column">
+        <div class="button" onclick="showTeeTimes('U.S. Open')">U.S. Open</div>
+        <div class="button" onclick="showTeeTimes('U.S. Women's Amateur')">U.S. Women's Amateur</div>
+        <div class="button" onclick="showTeeTimes('U.S. Amateur')">U.S. Amateur</div>
+    </div>
 </div>
 
 <div id="teeTimes" class="section">
@@ -172,6 +196,17 @@ function submitForm(e) {
     document.getElementById('registration').classList.remove('active');
     document.getElementById('teeTimes').classList.add('active');
 }
+
+document.querySelectorAll('.section').forEach(section => {
+    let scrollTimeout;
+    section.addEventListener('scroll', () => {
+        section.classList.add('scrolling');
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            section.classList.remove('scrolling');
+        }, 500);
+    });
+});
 </script>
 </body>
 </html>
