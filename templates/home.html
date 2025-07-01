@@ -28,8 +28,6 @@
             overflow-y: scroll;
             padding: 20px 0;
             box-sizing: border-box;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.3) transparent;
         }
         .section::-webkit-scrollbar {
             width: 4px;
@@ -84,8 +82,11 @@
         .tee-time-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            column-gap: 5px;
+            row-gap: 10px;
             justify-items: center;
+            width: 260px;
+            margin: 0 auto;
         }
         .tournament-column {
             display: flex;
@@ -108,9 +109,9 @@
 <div id="home" class="section active">
     <h1>Select a Tournament</h1>
     <div class="tournament-column">
-        <div class="button" onclick="showTeeTimes('U.S. Open')">U.S. Open</div>
-        <div class="button" onclick="showTeeTimes('U.S. Women's Amateur')">U.S. Women's Amateur</div>
-        <div class="button" onclick="showTeeTimes('U.S. Amateur')">U.S. Amateur</div>
+        <div class="button tournament-btn" data-tournament="U.S. Open">U.S. Open</div>
+        <div class="button tournament-btn" data-tournament="U.S. Women's Amateur">U.S. Women's Amateur</div>
+        <div class="button tournament-btn" data-tournament="U.S. Amateur">U.S. Amateur</div>
     </div>
 </div>
 
@@ -135,6 +136,7 @@
         <label><input type="checkbox" id="smsOptIn"> Receive confirmation via text message</label><br><br>
         <button class="button" type="submit">Submit</button>
     </form>
+    <div class="button" onclick="backToTeeTimes()">Back</div>
 </div>
 
 <script>
@@ -190,12 +192,23 @@ function goHome() {
     document.getElementById('home').classList.add('active');
 }
 
+function backToTeeTimes() {
+    document.getElementById('registration').classList.remove('active');
+    document.getElementById('teeTimes').classList.add('active');
+}
+
 function submitForm(e) {
     e.preventDefault();
     alert(`Thank you for registering for ${currentTournament} on ${currentDay} at ${currentTime}!`);
     document.getElementById('registration').classList.remove('active');
     document.getElementById('teeTimes').classList.add('active');
 }
+
+document.querySelectorAll('.tournament-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        showTeeTimes(btn.getAttribute('data-tournament'));
+    });
+});
 
 document.querySelectorAll('.section').forEach(section => {
     let scrollTimeout;
