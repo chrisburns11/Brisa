@@ -1,99 +1,74 @@
 
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_mail import Mail, Message
-from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.secret_key = 'secret_key_here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tee_times.db'
-app.config['MAIL_SERVER'] = 'smtp.example.com'
+app.secret_key = 'your_secret_key_here'
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your_email@example.com'
-app.config['MAIL_PASSWORD'] = 'your_password'
+app.config['MAIL_USERNAME'] = 'your_email_here'
+app.config['MAIL_PASSWORD'] = 'your_email_password_here'
 
 mail = Mail(app)
-db = SQLAlchemy(app)
 
-class TeeTime(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tournament = db.Column(db.String(100))
-    day = db.Column(db.String(20))
-    time = db.Column(db.String(20))
-    players = db.relationship('Player', backref='tee_time', lazy=True)
+# Helper function to create tee times list with unique IDs
+def create_tee_times(start_id):
+    times = []
+    for idx, time_str in enumerate(['07:00 AM', '07:20 AM', '07:40 AM', '08:00 AM', '08:20 AM', '08:40 AM', '09:00 AM', '09:20 AM', '09:40 AM', '10:00 AM', '10:20 AM', '10:40 AM', '11:00 AM', '11:20 AM', '11:40 AM', '12:00 PM', '12:20 PM', '12:40 PM', '01:00 PM']):
+        times.append({"id": start_id + idx, "time": time_str, "players": []})
+    return times
 
-class Player(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(50))
-    last_name = db.Column(db.String(50))
-    phone = db.Column(db.String(20))
-    email = db.Column(db.String(120))
-    sms_opt_in = db.Column(db.Boolean)
-    tee_time_id = db.Column(db.Integer, db.ForeignKey('tee_time.id'))
+# Tee times structure
+tee_times = {
+    "U.S. Open": {"Tuesday": create_tee_times(1), "Wednesday": create_tee_times(100)},
+    "U.S. Women's Amateur": {"Tuesday": create_tee_times(200), "Wednesday": create_tee_times(300)},
+    "U.S. Amateur": {"Tuesday": create_tee_times(400), "Wednesday": create_tee_times(500)},
+}
 
 @app.route('/')
 def home():
     return render_template('home.html')
 
 @app.route('/<tournament>')
-def tournament_page(tournament):
-    tee_times = TeeTime.query.filter_by(tournament=tournament).all()
-    return render_template('tournament.html', tournament=tournament, tee_times=tee_times)
+def show_tee_times(tournament):
+    if tournament not in tee_times:
+        return "Tournament not found", 404
+    return render_template('tournament.html', tournament=tournament, days=tee_times[tournament])
 
-@app.route('/register/<int:tee_time_id>', methods=['GET', 'POST'])
-def register(tee_time_id):
-    tee_time = TeeTime.query.get_or_404(tee_time_id)
+@app.route('/register/<tournament>/<day>/<int:tee_time_id>', methods=['GET', 'POST'])
+def register(tournament, day, tee_time_id):
+    if tournament not in tee_times or day not in tee_times[tournament]:
+        return "Invalid tournament or day", 404
+
+    selected_time = next((t for t in tee_times[tournament][day] if t['id'] == tee_time_id), None)
+    if not selected_time:
+        return "Tee time not found", 404
 
     if request.method == 'POST':
-        if len(tee_time.players) >= 4:
-            flash('This tee time is already full.')
-            return redirect(url_for('tournament_page', tournament=tee_time.tournament))
+        if len(selected_time['players']) >= 4:
+            flash('Tee time is full.')
+            return redirect(url_for('show_tee_times', tournament=tournament))
 
-        player = Player(
-            first_name=request.form['first_name'],
-            last_name=request.form['last_name'],
-            phone=request.form['phone'],
-            email=request.form['email'],
-            sms_opt_in=('sms_opt_in' in request.form),
-            tee_time=tee_time
-        )
+        player = {
+            "first_name": request.form['first_name'],
+            "last_name": request.form['last_name'],
+            "phone": request.form['phone'],
+            "email": request.form['email']
+        }
+        selected_time['players'].append(player)
 
-        db.session.add(player)
-        db.session.commit()
+        # Send confirmation email
+        msg = Message('Brisa Tee Time Confirmation', recipients=[player['email']])
+        msg.body = f"Hello {player['first_name']},\n\nYou are registered for {tournament} on {day} at {selected_time['time']}.\n\nThank you."
+        mail.send(msg)
 
-        send_confirmation_email(player)
-        if player.sms_opt_in:
-            send_confirmation_sms(player)
+        # Simulate SMS sending if opted in
+        if 'sms_opt_in' in request.form:
+            print(f"SMS sent to {player['phone']}: Confirmation for {tournament} on {day} at {selected_time['time']}.")
 
-        flash('Your tee time has been successfully reserved!')
-        return redirect(url_for('tournament_page', tournament=tee_time.tournament))
+        flash('Registration successful. Confirmation sent.')
+        return redirect(url_for('show_tee_times', tournament=tournament))
 
-    return render_template('register.html', tee_time=tee_time)
-
-def send_confirmation_email(player):
-    msg = Message('Tee Time Confirmation', sender='noreply@example.com', recipients=[player.email])
-    msg.body = f"Hello {player.first_name},\n\nYour tee time has been confirmed for {player.tee_time.day} at {player.tee_time.time}.\n\nThank you!"
-    mail.send(msg)
-
-def send_confirmation_sms(player):
-    pass
-
-@app.cli.command('create_tee_times')
-def create_tee_times():
-    db.create_all()
-    tournaments = ['U.S. Open', "U.S. Women's Amateur", 'U.S. Amateur']
-    days = ['Day 1', 'Day 2']
-
-    for tournament in tournaments:
-        for day in days:
-            for hour in range(7, 14):
-                for minute in [0, 20, 40]:
-                    period = 'am' if hour < 12 else 'pm'
-                    display_hour = hour if hour <= 12 else hour - 12
-                    time_str = f"{display_hour}:{minute:02}{period}"
-                    tee_time = TeeTime(tournament=tournament, day=day, time=time_str)
-                    db.session.add(tee_time)
-    db.session.commit()
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    return render_template('register.html', tee_time=selected_time, tournament=tournament, day=day)
