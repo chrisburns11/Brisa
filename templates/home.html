@@ -1,88 +1,177 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Brisa - Select Tournament</title>
-    
-<style>
-    body, html {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        overflow: hidden;
-        font-family: Arial, sans-serif;
-        color: white;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        position: relative;
-    }
-
-    video#bgVideo {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        object-fit: cover;
-        z-index: -1;
-        pointer-events: none;
-    }
-
-    h1 {
-        margin-bottom: 20px;
-        font-size: 2em;
-        text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
-    }
-
-    .button {
-        margin: 10px;
-        padding: 15px 30px;
-        background-color: rgba(0,0,0,0.5);
-        color: white;
-        border: 2px solid white;
-        border-radius: 8px;
-        font-size: 1em;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .button:hover {
-        background-color: rgba(0,0,0,0.7);
-    }
-
-    img {
-        height: 40px;
-        vertical-align: middle;
-        margin-right: 10px;
-    }
-
-    input[type="text"], input[type="email"] {
-        padding: 10px;
-        margin: 5px 0;
-        border-radius: 5px;
-        border: none;
-    }
-</style>
-
+    <title>Brisa - Tee Time Registration</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+        }
+        video#bgVideo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .section {
+            display: none;
+            text-align: center;
+            max-width: 90%;
+        }
+        .active {
+            display: block;
+        }
+        .button {
+            margin: 10px;
+            padding: 15px 30px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .button:hover {
+            background-color: rgba(0,0,0,0.7);
+        }
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .tab {
+            padding: 10px;
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            border: 1px solid white;
+            margin: 0 5px;
+        }
+        .tab.active {
+            background-color: rgba(255,255,255,0.5);
+            color: black;
+        }
+        .tee-time-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .full-text {
+            background-color: rgba(255,0,0,0.5);
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-
 <video id="bgVideo" autoplay muted loop playsinline>
     <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-    Your browser does not support the video tag.
 </video>
 
-<h1>Select a Tournament</h1>
-<form action="/U.S. Open" method="get">
-    <button class="button" type="submit">U.S. Open</button>
-</form>
-<form action="/U.S. Women's Amateur" method="get">
-    <button class="button" type="submit">U.S. Women's Amateur</button>
-</form>
-<form action="/U.S. Amateur" method="get">
-    <button class="button" type="submit">U.S. Amateur</button>
-</form>
+<div id="home" class="section active">
+    <h1>Select a Tournament</h1>
+    <div class="button" onclick="showTeeTimes('U.S. Open')">U.S. Open</div>
+    <div class="button" onclick="showTeeTimes('U.S. Women's Amateur')">U.S. Women's Amateur</div>
+    <div class="button" onclick="showTeeTimes('U.S. Amateur')">U.S. Amateur</div>
+</div>
+
+<div id="teeTimes" class="section">
+    <h1 id="tournamentTitle"></h1>
+    <div class="tab-container">
+        <div class="tab active" onclick="switchDay('Tuesday')">Tuesday</div>
+        <div class="tab" onclick="switchDay('Wednesday')">Wednesday</div>
+    </div>
+    <div id="TuesdayTimes" class="tee-time-grid"></div>
+    <div id="WednesdayTimes" class="tee-time-grid" style="display: none;"></div>
+    <div class="button" onclick="goHome()">Back</div>
+</div>
+
+<div id="registration" class="section">
+    <h1 id="regTitle"></h1>
+    <form onsubmit="submitForm(event)">
+        <input type="text" id="firstName" placeholder="First Name" required><br><br>
+        <input type="text" id="lastName" placeholder="Last Name" required><br><br>
+        <input type="text" id="phone" placeholder="Phone" required><br><br>
+        <input type="email" id="email" placeholder="Email" required><br><br>
+        <label><input type="checkbox" id="smsOptIn"> Receive confirmation via text message</label><br><br>
+        <button class="button" type="submit">Submit</button>
+    </form>
+</div>
+
+<script>
+let currentTournament = "";
+let currentDay = "";
+let currentTime = "";
+
+const teeTimes = [
+    "7:00 AM", "7:20 AM", "7:40 AM", "8:00 AM", "8:20 AM", "8:40 AM",
+    "9:00 AM", "9:20 AM", "9:40 AM", "10:00 AM", "10:20 AM", "10:40 AM",
+    "11:00 AM", "11:20 AM", "11:40 AM", "12:00 PM", "12:20 PM", "12:40 PM", "1:00 PM"
+];
+
+function showTeeTimes(tournament) {
+    currentTournament = tournament;
+    document.getElementById('home').classList.remove('active');
+    document.getElementById('teeTimes').classList.add('active');
+    document.getElementById('tournamentTitle').innerText = tournament + " - Tee Times";
+    populateTeeTimes();
+}
+
+function populateTeeTimes() {
+    ['TuesdayTimes', 'WednesdayTimes'].forEach(dayId => {
+        const container = document.getElementById(dayId);
+        container.innerHTML = "";
+        teeTimes.forEach(time => {
+            const btn = document.createElement('div');
+            btn.className = "button";
+            btn.innerText = time;
+            btn.onclick = () => startRegistration(dayId.includes('Tuesday') ? 'Tuesday' : 'Wednesday', time);
+            container.appendChild(btn);
+        });
+    });
+}
+
+function switchDay(day) {
+    document.getElementById('TuesdayTimes').style.display = day === 'Tuesday' ? 'grid' : 'none';
+    document.getElementById('WednesdayTimes').style.display = day === 'Wednesday' ? 'grid' : 'none';
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab')[day === 'Tuesday' ? 0 : 1].classList.add('active');
+}
+
+function startRegistration(day, time) {
+    currentDay = day;
+    currentTime = time;
+    document.getElementById('teeTimes').classList.remove('active');
+    document.getElementById('registration').classList.add('active');
+    document.getElementById('regTitle').innerText = `${currentTournament} - ${day} at ${time}`;
+}
+
+function goHome() {
+    document.getElementById('teeTimes').classList.remove('active');
+    document.getElementById('home').classList.add('active');
+}
+
+function submitForm(e) {
+    e.preventDefault();
+    alert(`Thank you for registering for ${currentTournament} on ${currentDay} at ${currentTime}!`);
+    document.getElementById('registration').classList.remove('active');
+    document.getElementById('teeTimes').classList.add('active');
+}
+</script>
 </body>
 </html>
