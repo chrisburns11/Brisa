@@ -27,18 +27,11 @@
                 {% endfor %}
             </select>
 
-            <label for="day">Select Day:</label>
-            <select id="day" name="day" required>
-                {% for day in tournaments[selected_tournament].keys() %}
-                    <option value="{{ day }}">{{ day }}</option>
-                {% endfor %}
-            </select>
-
+            {% set first_tournament = tournaments[tournaments.keys() | list | first] %}
+            {% set first_day = first_tournament[first_tournament.keys() | list | first] %}
             <label for="time">Select Time:</label>
-            {% set first_division = (tournaments.values() | list)[0] %}
-            {% set first_times = (first_division.values() | list)[0] %}
             <select id="time" name="time" required>
-                {% for time in first_times %}
+                {% for time in first_day %}
                     <option value="{{ time }}">{{ time }}</option>
                 {% endfor %}
             </select>
