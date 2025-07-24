@@ -6,3 +6,4 @@ env/
 *.pyo
 *.pyd
 *.sqlite3
+.env
