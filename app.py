@@ -22,7 +22,7 @@ mail = Mail(app)
 # Twilio config (corrected key)
 twilio_sid = os.getenv("TWILIO_SID")
 twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
-twilio_number = os.getenv("TWILIO_PHONE")  # Matches .env key
+twilio_number = os.getenv("TWILIO_PHONE_NUMBER")  # Matches .env key
 
 client = Client(twilio_sid, twilio_token)
 
