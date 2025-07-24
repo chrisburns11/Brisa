@@ -52,7 +52,7 @@ def submit():
 
 You are confirmed for: {tee_time}
 
-- Brisa"
+"- Brisa"
     mail.send(msg)
 
     if phone:
