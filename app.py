@@ -48,18 +48,23 @@ def submit():
     msg = Message("Tee Time Confirmation",
                   sender=os.getenv("EMAIL_USER"),
                   recipients=[email])
-    msg.body = f"Hi {name},\n\nYour tee time for {tournament_name} on {day} at {tee_time} has been confirmed.\n\nThank you for using Brisa!"
-
-You are confirmed for: {tee_time}
-
-"- Brisa"
+    msg.body = (
+        f"Hi {name},\n\n"
+        f"Your tee time for {tournament} on {day} at {time} has been confirmed.\n\n"
+        f"You are confirmed for: {tee_time}\n\n"
+        "- Brisa"
+    )
     mail.send(msg)
 
     if phone:
         client.messages.create(
             to=phone,
             from_=twilio_number,
-            body=f"Hi {name},\n\nYour tee time for {tournament_name} on {day} at {tee_time} has been confirmed!\n\n"
+            body=(
+                f"Hi {name},\n\n"
+                f"Your tee time for {tournament} on {day} at {time} has been confirmed!\n\n"
+                "- Brisa"
+            )
         )
 
     return f"Thanks {name}, your tee time is confirmed for {tee_time}!"
