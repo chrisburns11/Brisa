@@ -48,7 +48,7 @@ def submit():
     msg = Message("Tee Time Confirmation",
                   sender=os.getenv("EMAIL_USER"),
                   recipients=[email])
-    msg.body = f"Hi {name},
+    msg.body = f"Hi {name},\n\nYour tee time for {tournament_name} on {day} at {tee_time} has been confirmed.\n\nThank you for using Brisa!"
 
 You are confirmed for: {tee_time}
 
