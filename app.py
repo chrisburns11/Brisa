@@ -59,7 +59,7 @@ You are confirmed for: {tee_time}
         client.messages.create(
             to=phone,
             from_=twilio_number,
-            body=f"Hi {name},\n\nYour tee time for {tournament_name} on {day} at {tee_time} has been confirmed.\n\n- Brisa"
+            body=f"Hi {name},\n\nYour tee time for {tournament_name} on {day} at {tee_time} has been confirmed!\n\n"
         )
 
     return f"Thanks {name}, your tee time is confirmed for {tee_time}!"
