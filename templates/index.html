@@ -1,113 +1,21 @@
+<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brisa Tee Time Reservation</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
-    }
-    h1 {
-      text-align: center;
-      color: #333;
-    }
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      color: #444;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    .alert-success {
-      padding: 10px;
-      background-color: #d4edda;
-      color: #155724;
-      border-radius: 5px;
-      margin-bottom: 15px;
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Brisa Tee Times</title>
 </head>
 <body>
+    <h1>Brisa Tee Times</h1>
 
-  <h1>Reserve Your Tee Time</h1>
+    {# Step through the nested dictionaries safely in Jinja2 #}
+    {% set first_course = tournaments.values() | list | first %}
+    {% set first_day = first_course.values() | list | first %}
 
-  {% if request.args.get('success') %}
-    <div class="alert-success">
-      ✅ Your tee time has been submitted! Check your email (and phone if opted in).
-    </div>
-  {% endif %}
-
-  <form action="/submit" method="POST">
-    <label for="first_name">First Name</label>
-    <input type="text" name="first_name" required>
-
-    <label for="last_name">Last Name</label>
-    <input type="text" name="last_name" required>
-
-    <label for="email">Email</label>
-    <input type="email" name="email" required>
-
-    <label for="phone">Phone Number</label>
-    <input type="tel" name="phone" placeholder="+1234567890" required>
-
-    <label for="tournament">Tournament</label>
-    <select name="tournament" required>
-      {% for t in tournaments.keys() %}
-        <option value="{{ t }}">{{ t }}</option>
-      {% endfor %}
-    </select>
-
-    <label for="day">Day</label>
-    <select name="day" required>
-      {% for day in tournaments.values()|first %}
-        <option value="{{ loop.index0 }}">{{ loop.index0 }}</option>
-      {% endfor %}
-    </select>
-
-    <label for="time">Time</label>
-    <select name="time" required>
-      {% for time in tournaments.values()|first.values()|first %}
-        <option value="{{ time }}">{{ time }}</option>
-      {% endfor %}
-    </select>
-
-    <label>
-      <input type="checkbox" name="sms_opt_in" value="yes">
-      I’d like to receive a text confirmation.
-    </label>
-
-    <button type="submit">Submit</button>
-  </form>
-
+    <ul>
+    {% for time in first_day %}
+        <li>{{ time }}</li>
+    {% endfor %}
+    </ul>
 </body>
 </html>
