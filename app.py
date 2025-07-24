@@ -1,17 +1,30 @@
-
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_mail import Mail, Message
+from twilio.rest import Client
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'
+app.secret_key = 'your_secret_key_here'  # You should replace this with a secure key
 
+# Email config
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'your_email_here'
-app.config['MAIL_PASSWORD'] = 'your_email_password_here'
+app.config['MAIL_USERNAME'] = os.getenv("EMAIL_USER")
+app.config['MAIL_PASSWORD'] = os.getenv("EMAIL_PASS")
 
 mail = Mail(app)
+
+# Twilio config (corrected key)
+twilio_sid = os.getenv("TWILIO_SID")
+twilio_token = os.getenv("TWILIO_AUTH_TOKEN")
+twilio_number = os.getenv("TWILIO_PHONE")  # Matches .env key
+
+client = Client(twilio_sid, twilio_token)
 
 # Helper function to create tee times list with unique IDs
 def create_tee_times(start_id):
@@ -61,14 +74,24 @@ def register(tournament, day, tee_time_id):
 
         # Send confirmation email
         msg = Message('Brisa Tee Time Confirmation', recipients=[player['email']])
-        msg.body = f"Hello {player['first_name']},\n\nYou are registered for {tournament} on {day} at {selected_time['time']}.\n\nThank you."
+        msg.body = f"Hello {player['first_name']},\n\nYou are registered for {tournament} on {day} at {selected_time['time']}.\n\nThank you for using Brisa!"
         mail.send(msg)
 
-        # Simulate SMS sending if opted in
+        # Send SMS confirmation if opted in
         if 'sms_opt_in' in request.form:
-            print(f"SMS sent to {player['phone']}: Confirmation for {tournament} on {day} at {selected_time['time']}.")
+            try:
+                client.messages.create(
+                    to=player["phone"],
+                    from_=twilio_number,
+                    body=f"Hi {player['first_name']}, you're confirmed for {tournament} on {day} at {selected_time['time']}. - Brisa"
+                )
+            except Exception as e:
+                print(f"SMS failed to send: {e}")
 
         flash('Registration successful. Confirmation sent.')
         return redirect(url_for('show_tee_times', tournament=tournament))
 
     return render_template('register.html', tee_time=selected_time, tournament=tournament, day=day)
+
+if __name__ == "__main__":
+    app.run(debug=True)
