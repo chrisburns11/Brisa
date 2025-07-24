@@ -2,42 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Brisa Tee Time Selector</title>
+    <title>Brisa</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Brisa</h1>
-        <h2>Select a Tee Time</h2>
+    <video autoplay muted loop id="bg-video">
+        <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+    </video>
+    <div class="overlay">
+        <div class="form-container">
+            <h1>Brisa Tee Time Sign-Up</h1>
+            <form method="POST" action="/submit">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <input type="tel" name="phone" placeholder="Your Phone Number (optional)">
 
-        <form method="POST" action="/submit">
-            <label for="name">Your Name:</label>
-            <input type="text" id="name" name="name" required>
+                <label for="tournament">Tournament:</label>
+                <select name="tournament" id="tournament" required>
+                    {% for tournament in tournaments %}
+                        <option value="{{ tournament }}">{{ tournament }}</option>
+                    {% endfor %}
+                </select>
 
-            <label for="email">Your Email:</label>
-            <input type="email" id="email" name="email" required>
+                <label for="day">Day:</label>
+                <select name="day" id="day" required>
+                    {% set first_t = tournaments[tournaments|list|first] %}
+                    {% for day in first_t %}
+                        <option value="{{ day }}">{{ day }}</option>
+                    {% endfor %}
+                </select>
 
-            <label for="phone">Your Phone Number:</label>
-            <input type="tel" id="phone" name="phone" required>
+                <label for="time">Tee Time:</label>
+                <select name="time" id="time" required>
+                    {% set first_day = first_t[first_t|list|first] %}
+                    {% for time in first_day %}
+                        <option value="{{ time }}">{{ time }}</option>
+                    {% endfor %}
+                </select>
 
-            <label for="tournament">Select Tournament:</label>
-            <select id="tournament" name="tournament" required>
-                {% for tournament in tournaments %}
-                    <option value="{{ tournament }}">{{ tournament }}</option>
-                {% endfor %}
-            </select>
-
-            {% set first_tournament = tournaments[tournaments.keys() | list | first] %}
-            {% set first_day = first_tournament[first_tournament.keys() | list | first] %}
-            <label for="time">Select Time:</label>
-            <select id="time" name="time" required>
-                {% for time in first_day %}
-                    <option value="{{ time }}">{{ time }}</option>
-                {% endfor %}
-            </select>
-
-            <button type="submit">Confirm</button>
-        </form>
+                <button type="submit">Confirm</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
