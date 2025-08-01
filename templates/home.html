@@ -1,16 +1,19 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Brisa Tee Times</title>
+    <title>Brisa Tee Time</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body, html {
-            height: 100%;
             margin: 0;
+            padding: 0;
+            height: 100%;
             font-family: 'Helvetica Neue', sans-serif;
-            overflow: hidden;
             color: white;
+            text-align: center;
+            overflow: hidden;
         }
 
         .video-background {
@@ -20,68 +23,52 @@
             min-width: 100%;
             min-height: 100%;
             z-index: -1;
-            object-fit: cover;
-        }
-
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.5);
         }
 
         .content {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            max-width: 90%;
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.5);
+            min-height: 100vh;
+            overflow-y: auto;
         }
 
-        .tournament-title {
-            font-size: 2em;
-            margin-bottom: 20px;
+        h1 {
+            margin-top: 0;
+            font-size: 2.5rem;
         }
 
-        .tee-time-button {
-            background-color: rgba(255, 255, 255, 0.2);
-            border: none;
-            padding: 1rem 2rem;
-            margin: 0.5rem;
+        .tee-time-form {
+            max-width: 400px;
+            margin: auto;
+            background: #ffffff11;
+            padding: 1.5rem;
             border-radius: 10px;
-            font-size: 1rem;
+        }
+
+        input[type="text"], input[type="email"], select {
+            width: 100%;
+            padding: 0.75rem;
+            margin-top: 1rem;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button {
+            margin-top: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background-color: #007bff;
             color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
             cursor: pointer;
         }
 
-        .form-container {
-            display: none;
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 2rem;
-            border-radius: 10px;
-            margin-top: 2rem;
-        }
-
-        .form-container input, .form-container button {
-            display: block;
-            width: 100%;
+        .confirmation {
             margin-top: 1rem;
-            padding: 0.75rem;
-            font-size: 1rem;
-        }
-
-        .form-container label {
-            text-align: left;
-            margin-top: 1rem;
-        }
-
-        .confirmation-message {
-            margin-top: 2rem;
-            font-size: 1.25rem;
-            color: lightgreen;
+            color: #00ff88;
         }
     </style>
 </head>
@@ -89,58 +76,48 @@
     <video autoplay muted loop class="video-background">
         <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
     </video>
-    <div class="overlay"></div>
+
     <div class="content">
-        <div class="tournament-title">Select Your Tee Time</div>
-        {% for time in tee_times %}
-        <button class="tee-time-button" onclick="showForm('{{ time }}')">{{ time }}</button>
-        {% endfor %}
-
-        <div class="form-container" id="formContainer">
-            <form id="registrationForm">
-                <input type="hidden" name="tee_time" id="teeTimeInput">
-                <label for="first_name">First Name</label>
-                <input type="text" name="first_name" required>
-
-                <label for="last_name">Last Name</label>
-                <input type="text" name="last_name" required>
-
-                <label for="email">Email</label>
-                <input type="email" name="email" required>
-
-                <button type="submit">Confirm Registration</button>
-            </form>
-            <div class="confirmation-message" id="confirmationMessage" style="display:none;">
-                ✅ Registration confirmed! Check your email for details.
-            </div>
-        </div>
+        <h1>Brisa Tee Time Registration</h1>
+        <form id="tee-time-form" class="tee-time-form">
+            <input type="text" name="first_name" placeholder="First Name" required>
+            <input type="text" name="last_name" placeholder="Last Name" required>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <select name="tournament" required>
+                <option value="">Select Tournament</option>
+                <option value="U.S. Open">U.S. Open</option>
+                <option value="U.S. Women's Amateur">U.S. Women's Amateur</option>
+                <option value="U.S. Amateur">U.S. Amateur</option>
+            </select>
+            <select name="tee_time" required>
+                <option value="">Select Tee Time</option>
+                <option value="8:00 AM">8:00 AM</option>
+                <option value="9:00 AM">9:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+            </select>
+            <button type="submit">Confirm Registration</button>
+            <div class="confirmation" id="confirmation-message"></div>
+        </form>
     </div>
 
     <script>
-        function showForm(teeTime) {
-            document.getElementById("formContainer").style.display = "block";
-            document.getElementById("teeTimeInput").value = teeTime;
-            document.getElementById("confirmationMessage").style.display = "none";
-        }
+        const form = document.getElementById('tee-time-form');
+        const confirmationMessage = document.getElementById('confirmation-message');
 
-        document.getElementById("registrationForm").addEventListener("submit", function(e) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(this);
-            fetch("/register", {
-                method: "POST",
+            const formData = new FormData(form);
+            const response = await fetch('/submit', {
+                method: 'POST',
                 body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    document.getElementById("registrationForm").reset();
-                    document.getElementById("confirmationMessage").style.display = "block";
-                } else {
-                    alert("Something went wrong. Please try again.");
-                }
-            })
-            .catch(() => {
-                alert("Failed to send request.");
             });
+
+            if (response.ok) {
+                confirmationMessage.textContent = "Confirmation email sent successfully!";
+                form.reset();
+            } else {
+                confirmationMessage.textContent = "There was an error sending your confirmation. Please try again.";
+            }
         });
     </script>
 </body>
