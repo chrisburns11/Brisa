@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,147 +6,149 @@
     <title>Brisa Tee Times</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* Background video */
         body, html {
             margin: 0;
             padding: 0;
-            font-family: 'Helvetica Neue', sans-serif;
             height: 100%;
-            overflow: hidden;
+            font-family: 'Helvetica Neue', sans-serif;
+            overflow-x: hidden;
+            color: white;
         }
-        #background-video {
+        .video-bg {
             position: fixed;
-            right: 0;
-            bottom: 0;
-            min-width: 100%;
-            min-height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-        .overlay {
-            position: absolute;
             top: 0;
             left: 0;
+            min-width: 100vw;
+            min-height: 100vh;
+            z-index: -1;
+            object-fit: cover;
+        }
+
+        .content {
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.55);
+            max-width: 600px;
+            margin: 5vh auto;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        h1, h2, label {
+            color: #fff;
+        }
+
+        select, input[type="text"], input[type="email"], button {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
+            padding: 0.75rem;
+            margin: 0.75rem 0;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
         }
-        .tournament-button, .tee-time-button {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid white;
+
+        button {
+            background-color: #BA0C2F;
             color: white;
-            padding: 1rem;
-            margin: 0.5rem;
-            border-radius: 10px;
             cursor: pointer;
-            font-size: 1.2rem;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
+            font-weight: bold;
         }
+
+        #confirmation {
+            margin-top: 1rem;
+            font-weight: bold;
+            color: #90ee90;
+        }
+
         .hidden {
             display: none;
-        }
-        form {
-            margin-top: 1rem;
-        }
-        input[type="text"], input[type="email"] {
-            padding: 0.5rem;
-            margin: 0.5rem 0;
-            border-radius: 5px;
-            border: none;
-            width: 200px;
-        }
-        button[type="submit"] {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            font-size: 1rem;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #confirmation-message {
-            margin-top: 1rem;
-            color: #00ffcc;
         }
     </style>
 </head>
 <body>
-    <video autoplay muted loop id="background-video">
-        <source src="/static/background.mp4" type="video/mp4">
+
+    <video autoplay muted loop class="video-bg" playsinline>
+        <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
     </video>
 
-    <div class="overlay">
-        <div id="tournament-container">
-            <div class="tournament-button" onclick="showTeeTimes('U.S. Open')">U.S. Open</div>
-            <div class="tournament-button" onclick="showTeeTimes('U.S. Women\'s Amateur')">U.S. Women’s Amateur</div>
-            <div class="tournament-button" onclick="showTeeTimes('U.S. Amateur')">U.S. Amateur</div>
+    <div class="content">
+        <h1>Brisa Tee Time Registration</h1>
+
+        <label for="tournament">Select a Tournament:</label>
+        <select id="tournament">
+            <option value="" disabled selected>Select...</option>
+            <option value="U.S. Open">U.S. Open</option>
+            <option value="U.S. Women's Amateur">U.S. Women's Amateur</option>
+            <option value="U.S. Amateur">U.S. Amateur</option>
+        </select>
+
+        <div id="teeTimeSection" class="hidden">
+            <label for="tee_time">Choose a Tee Time:</label>
+            <select id="tee_time">
+                <option value="" disabled selected>Select a time...</option>
+            </select>
         </div>
 
-        <div id="tee-time-container" class="hidden"></div>
+        <div id="infoSection" class="hidden">
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" required>
 
-        <form id="confirmation-form" class="hidden">
-            <input type="hidden" id="selected-tournament" name="tournament">
-            <input type="hidden" id="selected-time" name="tee_time">
-            <input type="text" name="name" placeholder="Your Name" required>
-            <input type="email" name="email" placeholder="Your Email" required>
-            <button type="submit">Confirm</button>
-        </form>
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" required>
 
-        <div id="confirmation-message"></div>
+            <button onclick="submitForm()">Submit</button>
+
+            <div id="confirmation" class="hidden">✅ Registration confirmed! A confirmation email has been sent.</div>
+        </div>
     </div>
 
     <script>
-        const teeTimes = {
-            "U.S. Open": ["Friday – 8:00 AM", "Friday – 1:00 PM", "Saturday – 8:00 AM"],
-            "U.S. Women's Amateur": ["Sunday – 9:00 AM", "Monday – 2:00 PM"],
-            "U.S. Amateur": ["Tuesday – 10:00 AM", "Wednesday – 3:00 PM"]
+        const tournamentTeeTimes = {
+            "U.S. Open": ["Monday 8:00 AM", "Monday 8:30 AM", "Monday 9:00 AM"],
+            "U.S. Women's Amateur": ["Tuesday 10:00 AM", "Tuesday 10:30 AM", "Tuesday 11:00 AM"],
+            "U.S. Amateur": ["Wednesday 1:00 PM", "Wednesday 1:30 PM", "Wednesday 2:00 PM"]
         };
 
-        function showTeeTimes(tournament) {
-            const container = document.getElementById("tee-time-container");
-            const form = document.getElementById("confirmation-form");
-            container.innerHTML = "";
-            form.classList.add("hidden");
-            document.getElementById("confirmation-message").innerText = "";
-
-            teeTimes[tournament].forEach(time => {
-                const btn = document.createElement("div");
-                btn.className = "tee-time-button";
-                btn.innerText = time;
-                btn.onclick = () => {
-                    document.getElementById("selected-tournament").value = tournament;
-                    document.getElementById("selected-time").value = time;
-                    form.classList.remove("hidden");
-                };
-                container.appendChild(btn);
+        document.getElementById('tournament').addEventListener('change', function() {
+            const selectedTournament = this.value;
+            const teeTimeDropdown = document.getElementById('tee_time');
+            teeTimeDropdown.innerHTML = '<option value="" disabled selected>Select a time...</option>';
+            tournamentTeeTimes[selectedTournament].forEach(time => {
+                const opt = document.createElement('option');
+                opt.value = time;
+                opt.textContent = time;
+                teeTimeDropdown.appendChild(opt);
             });
-
-            container.classList.remove("hidden");
-        }
-
-        document.getElementById("confirmation-form").addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const response = await fetch("/submit", {
-                method: "POST",
-                body: formData
-            });
-            const result = await response.json();
-            if (result.success) {
-                document.getElementById("confirmation-message").innerText = "Confirmation sent!";
-                this.classList.add("hidden");
-            } else {
-                document.getElementById("confirmation-message").innerText = "There was an error. Please try again.";
-            }
+            document.getElementById('teeTimeSection').classList.remove('hidden');
+            document.getElementById('infoSection').classList.add('hidden');
+            document.getElementById('confirmation').classList.add('hidden');
         });
+
+        document.getElementById('tee_time').addEventListener('change', function() {
+            document.getElementById('infoSection').classList.remove('hidden');
+            document.getElementById('confirmation').classList.add('hidden');
+        });
+
+        function submitForm() {
+            const tournament = document.getElementById('tournament').value;
+            const teeTime = document.getElementById('tee_time').value;
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tournament, tee_time: teeTime, name, email })
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('confirmation').classList.remove('hidden');
+                    document.getElementById('infoSection').reset;
+                }
+            })
+            .catch(err => console.error('Error:', err));
+        }
     </script>
+
 </body>
 </html>
