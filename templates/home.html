@@ -9,6 +9,7 @@
         body, html {
             margin: 0;
             padding: 0;
+            height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
@@ -28,29 +29,31 @@
 
         .overlay {
             position: relative;
-            z-index: 1;
-            text-align: center;
-            padding-top: 60px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            padding-top: 100px;
+            background-color: rgba(0, 0, 0, 0.3);
         }
 
         .logo {
-            width: 180px;
+            width: 150px;
             margin-bottom: 20px;
         }
 
-        .tabs {
+        .tab-buttons {
             display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         .tab-button {
-            background-color: transparent;
-            border: 2px solid black;
-            color: black;
             padding: 10px 20px;
-            margin: 0 10px;
-            font-size: 16px;
+            background-color: lightgray;
+            border: 1px solid black;
+            border-radius: 5px;
             cursor: pointer;
         }
 
@@ -59,79 +62,94 @@
             color: white;
         }
 
-        .tee-time-grid {
+        .tee-times {
             display: grid;
             grid-template-columns: repeat(2, auto);
-            gap: 15px;
+            gap: 20px;
             justify-content: center;
-            padding: 10px;
         }
 
-        .tee-time-btn {
-            background: rgba(255, 0, 0, 0.1);
+        .tee-time-button {
+            padding: 15px 30px;
+            background: rgba(255, 100, 100, 0.2);
             border: 1px solid black;
-            border-radius: 8px;
-            padding: 15px 25px;
-            font-size: 20px;
+            border-radius: 10px;
+            font-size: 1.25em;
             color: black;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .tee-time-btn:hover {
-            background: rgba(255, 0, 0, 0.2);
+            text-align: center;
+            backdrop-filter: blur(2px);
         }
     </style>
 </head>
 <body>
-    <video autoplay muted loop playsinline id="background-video">
-        <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-    </video>
 
-    <div class="overlay">
-        <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="LOGO" class="logo">
+<video autoplay muted loop playsinline preload="auto" poster="" id="background-video">
+  <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+</video>
 
-        <div class="tabs">
-            <button class="tab-button active" onclick="showTeeTimes('saturday')">Saturday</button>
-            <button class="tab-button" onclick="showTeeTimes('sunday')">Sunday</button>
-        </div>
-
-        <div id="tee-times" class="tee-time-grid">
-            <!-- Tee time buttons will be inserted here by JS -->
-        </div>
+<div class="overlay">
+    <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo">
+    <div class="tab-buttons">
+        <div class="tab-button active" id="saturday-tab">Saturday</div>
+        <div class="tab-button" id="sunday-tab">Sunday</div>
     </div>
+    <div class="tee-times" id="tee-times-container">
+        <!-- Tee time buttons will be populated here -->
+    </div>
+</div>
 
-    <script>
-        const saturdayTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"];
-        const sundayTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"];
+<script>
+    const saturdayTab = document.getElementById('saturday-tab');
+    const sundayTab = document.getElementById('sunday-tab');
+    const teeTimesContainer = document.getElementById('tee-times-container');
 
-        function renderTeeTimes(times) {
-            const container = document.getElementById('tee-times');
-            container.innerHTML = '';
-            times.forEach(time => {
-                const btn = document.createElement('button');
-                btn.className = 'tee-time-btn';
-                btn.innerText = time;
-                container.appendChild(btn);
+    const teeTimes = {
+        Saturday: ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"],
+        Sunday: ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"]
+    };
+
+    function populateTeeTimes(day) {
+        teeTimesContainer.innerHTML = "";
+        teeTimes[day].forEach(time => {
+            const btn = document.createElement("div");
+            btn.className = "tee-time-button";
+            btn.textContent = time;
+            teeTimesContainer.appendChild(btn);
+        });
+    }
+
+    function setActiveTab(tab) {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        tab.classList.add('active');
+    }
+
+    saturdayTab.addEventListener("click", () => {
+        populateTeeTimes("Saturday");
+        setActiveTab(saturdayTab);
+    });
+
+    sundayTab.addEventListener("click", () => {
+        populateTeeTimes("Sunday");
+        setActiveTab(sundayTab);
+    });
+
+    // Load default on page load
+    window.addEventListener("DOMContentLoaded", () => {
+        populateTeeTimes("Saturday");
+        setActiveTab(saturdayTab);
+
+        const video = document.getElementById('background-video');
+        if (video) {
+            video.muted = true;
+            video.playsInline = true;
+            video.setAttribute('playsinline', 'true');
+            video.play().catch(err => {
+                console.warn('Autoplay was blocked:', err);
             });
         }
+    });
+</script>
 
-        function showTeeTimes(day) {
-            const buttons = document.querySelectorAll('.tab-button');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.tab-button[onclick="showTeeTimes('${day}')"]`).classList.add('active');
-
-            if (day === 'saturday') {
-                renderTeeTimes(saturdayTimes);
-            } else {
-                renderTeeTimes(sundayTimes);
-            }
-        }
-
-        // Default to Saturday
-        document.addEventListener('DOMContentLoaded', function() {
-            showTeeTimes('saturday');
-        });
-    </script>
 </body>
 </html>
