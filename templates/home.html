@@ -3,69 +3,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Brisa Tee Times</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brisa Tee Time</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
         body, html {
             margin: 0;
             padding: 0;
-            height: 100%;
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
 
-        .background-container {
+        #background-video {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .background-container video {
-            position: absolute;
             top: 50%;
             left: 50%;
             min-width: 100%;
             min-height: 100%;
             width: auto;
             height: auto;
-            transform: translate(-50%, -50%);
             z-index: -1;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
         }
 
-        .content-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+        .overlay {
+            position: relative;
+            z-index: 1;
             text-align: center;
+            padding-top: 60px;
         }
 
         .logo {
-            max-width: 200px;
-            margin-bottom: 10px;
-        }
-
-        .day-buttons {
+            width: 180px;
             margin-bottom: 20px;
         }
 
-        .day-button {
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            background-color: transparent;
+            border: 2px solid black;
+            color: black;
             padding: 10px 20px;
             margin: 0 10px;
             font-size: 16px;
-            border: none;
-            border-radius: 5px;
             cursor: pointer;
-            background-color: rgba(255, 255, 255, 0.8);
         }
 
-        .day-button.active {
+        .tab-button.active {
             background-color: #BA0C2F;
             color: white;
         }
@@ -73,37 +62,42 @@
         .tee-time-grid {
             display: grid;
             grid-template-columns: repeat(2, auto);
-            gap: 20px;
+            gap: 15px;
+            justify-content: center;
+            padding: 10px;
         }
 
-        .tee-time-button {
-            padding: 14px 28px;
-            font-size: 20px;
-            background: linear-gradient(to bottom right, rgba(255, 0, 0, 0.05), rgba(255, 0, 0, 0.1));
+        .tee-time-btn {
+            background: rgba(255, 0, 0, 0.1);
             border: 1px solid black;
-            border-radius: 10px;
+            border-radius: 8px;
+            padding: 15px 25px;
+            font-size: 20px;
             color: black;
             cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .tee-time-btn:hover {
+            background: rgba(255, 0, 0, 0.2);
         }
     </style>
 </head>
 <body>
-    <div class="background-container">
-        <video autoplay muted loop id="bg-video">
-            <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
+    <video autoplay muted loop playsinline id="background-video">
+        <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+    </video>
 
-    <div class="content-wrapper">
-        <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo">
-        <div class="day-buttons">
-            <button class="day-button active" id="saturdayBtn">Saturday</button>
-            <button class="day-button" id="sundayBtn">Sunday</button>
+    <div class="overlay">
+        <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="LOGO" class="logo">
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTeeTimes('saturday')">Saturday</button>
+            <button class="tab-button" onclick="showTeeTimes('sunday')">Sunday</button>
         </div>
 
-        <div class="tee-time-grid" id="teeTimeGrid">
-            <!-- Tee time buttons will be injected here -->
+        <div id="tee-times" class="tee-time-grid">
+            <!-- Tee time buttons will be inserted here by JS -->
         </div>
     </div>
 
@@ -111,35 +105,33 @@
         const saturdayTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"];
         const sundayTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"];
 
-        const saturdayBtn = document.getElementById('saturdayBtn');
-        const sundayBtn = document.getElementById('sundayBtn');
-        const teeTimeGrid = document.getElementById('teeTimeGrid');
-
-        function loadTeeTimes(day) {
-            teeTimeGrid.innerHTML = "";
-            const times = day === "Saturday" ? saturdayTimes : sundayTimes;
+        function renderTeeTimes(times) {
+            const container = document.getElementById('tee-times');
+            container.innerHTML = '';
             times.forEach(time => {
                 const btn = document.createElement('button');
-                btn.className = 'tee-time-button';
-                btn.textContent = time;
-                teeTimeGrid.appendChild(btn);
+                btn.className = 'tee-time-btn';
+                btn.innerText = time;
+                container.appendChild(btn);
             });
         }
 
-        saturdayBtn.addEventListener('click', () => {
-            saturdayBtn.classList.add('active');
-            sundayBtn.classList.remove('active');
-            loadTeeTimes("Saturday");
-        });
+        function showTeeTimes(day) {
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-button[onclick="showTeeTimes('${day}')"]`).classList.add('active');
 
-        sundayBtn.addEventListener('click', () => {
-            sundayBtn.classList.add('active');
-            saturdayBtn.classList.remove('active');
-            loadTeeTimes("Sunday");
-        });
+            if (day === 'saturday') {
+                renderTeeTimes(saturdayTimes);
+            } else {
+                renderTeeTimes(sundayTimes);
+            }
+        }
 
-        // Default to Saturday on load
-        loadTeeTimes("Saturday");
+        // Default to Saturday
+        document.addEventListener('DOMContentLoaded', function() {
+            showTeeTimes('saturday');
+        });
     </script>
 </body>
 </html>
