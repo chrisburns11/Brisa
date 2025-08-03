@@ -77,6 +77,7 @@
 <body>
   <video autoplay muted loop playsinline id="background-video">
     <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4" />
+    <source src="{{ url_for('static', filename='background.webm') }}" type="video/webm" />
     Your browser does not support the video tag.
   </video>
 
@@ -99,41 +100,32 @@
   </div>
 
   <script>
-    // Tab functionality
     const saturdayTab = document.getElementById('saturday-tab');
     const sundayTab = document.getElementById('sunday-tab');
 
     saturdayTab.addEventListener('click', () => {
       saturdayTab.classList.add('active');
       sundayTab.classList.remove('active');
-      // TODO: Load Saturday tee times
+      // Load Saturday tee times if needed
     });
 
     sundayTab.addEventListener('click', () => {
       sundayTab.classList.add('active');
       saturdayTab.classList.remove('active');
-      // TODO: Load Sunday tee times
+      // Load Sunday tee times if needed
     });
 
-    // Video autoplay fallback for iOS
-    window.addEventListener('DOMContentLoaded', () => {
+    // Fallback autoplay strategies
+    const ensureVideoAutoplay = () => {
       const video = document.getElementById('background-video');
       if (video && video.paused) {
-        video.play().catch(e => {
-          console.warn("Autoplay failed:", e);
-        });
+        video.play().catch(e => console.warn("Autoplay failed:", e));
       }
-    });
+    };
+
+    window.addEventListener('DOMContentLoaded', ensureVideoAutoplay);
+    window.addEventListener('load', ensureVideoAutoplay);
+    requestAnimationFrame(ensureVideoAutoplay);
   </script>
-
-<script>
-  requestAnimationFrame(() => {
-    const video = document.getElementById('background-video');
-    if (video && video.paused) {
-      video.play().catch(() => {});
-    }
-  });
-</script>
-
 </body>
 </html>
