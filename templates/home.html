@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,8 +19,6 @@
       top: 0;
       left: 0;
       z-index: -1;
-      width: 100%;
-      height: 100%;
     }
 
     .logo {
@@ -94,10 +93,9 @@
   </div>
 
   <script>
-    // Draw video frame to canvas for autoplay workaround
+    const video = document.getElementById('bg-video');
     const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
-    const video = document.getElementById('bg-video');
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -107,39 +105,30 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    video.addEventListener('play', function () {
-      function drawFrame() {
-        if (!video.paused && !video.ended) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          requestAnimationFrame(drawFrame);
-        }
+    function drawFrame() {
+      if (!video.paused && !video.ended) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       }
+      requestAnimationFrame(drawFrame);
+    }
+
+    video.addEventListener('canplay', () => {
+      video.play();
       drawFrame();
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(error => {
-          console.warn('Autoplay attempt failed:', error);
-        });
-      }
-    });
-
-    // Tabs
+    // Tab functionality
     const saturdayTab = document.getElementById('saturday-tab');
     const sundayTab = document.getElementById('sunday-tab');
 
     saturdayTab.addEventListener('click', () => {
       saturdayTab.classList.add('active');
       sundayTab.classList.remove('active');
-      // Load Saturday tee times
     });
 
     sundayTab.addEventListener('click', () => {
       sundayTab.classList.add('active');
       saturdayTab.classList.remove('active');
-      // Load Sunday tee times
     });
   </script>
 </body>
