@@ -2,19 +2,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Brisa Tee Times</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
       overflow-x: hidden;
-      color: white;
     }
-
     #background-video {
       position: fixed;
       top: 50%;
@@ -28,133 +26,120 @@
       z-index: -1;
       pointer-events: none;
     }
-
-    .container {
+    .content {
+      position: relative;
+      z-index: 1;
       text-align: center;
-      padding-top: 60px;
+      color: white;
+      padding-top: 2rem;
     }
-
     .logo {
-      max-width: 120px;
-      margin-bottom: 20px;
+      max-width: 180px;
+      margin: 0 auto 20px auto;
+      display: block;
     }
-
-    .day-tabs {
+    .tabs {
       display: flex;
       justify-content: center;
-      margin-bottom: 20px;
       gap: 10px;
+      margin-bottom: 20px;
     }
-
     .tab-button {
       padding: 10px 20px;
       border: 1px solid white;
-      background-color: transparent;
+      background-color: rgba(255, 255, 255, 0.2);
       color: white;
       cursor: pointer;
-      font-weight: bold;
-      border-radius: 5px;
-      transition: background-color 0.3s;
     }
-
     .tab-button.active {
       background-color: #BA0C2F;
     }
-
-    .tee-time-buttons {
+    .tee-times {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 16px;
+      gap: 15px;
       max-width: 400px;
       margin: 0 auto;
     }
-
     .tee-time-button {
-      flex: 0 1 calc(50% - 16px);
-      padding: 12px 0;
+      flex: 0 0 47%;
+      padding: 15px;
+      background: linear-gradient(to right, rgba(255, 0, 0, 0.12), rgba(255, 0, 0, 0.08));
       border: 1px solid black;
-      background: rgba(255, 0, 0, 0.08);
-      color: white;
+      color: black;
       font-weight: bold;
-      border-radius: 8px;
       cursor: pointer;
+      border-radius: 6px;
       font-size: 1rem;
-      backdrop-filter: blur(4px);
     }
-
-    @media (max-width: 500px) {
+    @media (max-width: 480px) {
       .tee-time-button {
-        flex: 0 1 100%;
+        flex: 0 0 47%;
+        font-size: 0.9rem;
+        padding: 12px;
       }
     }
   </style>
 </head>
 <body>
+  <video autoplay muted loop playsinline id="background-video">
+    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
 
-<video autoplay muted loop playsinline id="background-video">
-  <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+  <div class="content">
+    <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
 
-<div class="container">
-  <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo">
-  <div class="day-tabs">
-    <button class="tab-button active" id="saturday-tab">Saturday</button>
-    <button class="tab-button" id="sunday-tab">Sunday</button>
+    <div class="tabs">
+      <button class="tab-button active" onclick="showTeeTimes('saturday')">Saturday</button>
+      <button class="tab-button" onclick="showTeeTimes('sunday')">Sunday</button>
+    </div>
+
+    <div id="tee-time-container">
+      <div class="tee-times" id="saturday-times">
+        <button class="tee-time-button">6:50am</button>
+        <button class="tee-time-button">7:00am</button>
+        <button class="tee-time-button">7:10am</button>
+        <button class="tee-time-button">7:20am</button>
+        <button class="tee-time-button">7:30am</button>
+        <button class="tee-time-button">7:40am</button>
+        <button class="tee-time-button">7:50am</button>
+        <button class="tee-time-button">8:00am</button>
+      </div>
+
+      <div class="tee-times" id="sunday-times" style="display: none;">
+        <button class="tee-time-button">6:50am</button>
+        <button class="tee-time-button">7:00am</button>
+        <button class="tee-time-button">7:10am</button>
+        <button class="tee-time-button">7:20am</button>
+        <button class="tee-time-button">7:30am</button>
+        <button class="tee-time-button">7:40am</button>
+        <button class="tee-time-button">7:50am</button>
+        <button class="tee-time-button">8:00am</button>
+      </div>
+    </div>
   </div>
-  <div class="tee-time-buttons" id="tee-time-container">
-    <!-- Tee time buttons will be injected here -->
-  </div>
-</div>
 
-<script>
-  const saturdayTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"];
-  const sundayTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"];
-  const teeTimeContainer = document.getElementById('tee-time-container');
+  <script>
+    function showTeeTimes(day) {
+      const buttons = document.querySelectorAll('.tab-button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`[onclick="showTeeTimes('${day}')"]`).classList.add('active');
 
-  function renderTeeTimes(day) {
-    teeTimeContainer.innerHTML = "";
-    const times = day === "saturday" ? saturdayTimes : sundayTimes;
-    times.forEach(time => {
-      const btn = document.createElement('button');
-      btn.className = "tee-time-button";
-      btn.innerText = time;
-      teeTimeContainer.appendChild(btn);
+      document.getElementById('saturday-times').style.display = (day === 'saturday') ? 'flex' : 'none';
+      document.getElementById('sunday-times').style.display = (day === 'sunday') ? 'flex' : 'none';
+    }
+
+    // iOS autoplay nudge
+    window.addEventListener('load', () => {
+      const vid = document.getElementById('background-video');
+      setTimeout(() => {
+        if (vid && vid.paused) {
+          vid.play().catch(() => {});
+        }
+      }, 300);
     });
-  }
-
-  document.getElementById('saturday-tab').addEventListener('click', () => {
-    renderTeeTimes("saturday");
-    setActiveTab('saturday-tab');
-  });
-
-  document.getElementById('sunday-tab').addEventListener('click', () => {
-    renderTeeTimes("sunday");
-    setActiveTab('sunday-tab');
-  });
-
-  function setActiveTab(activeId) {
-    document.querySelectorAll('.tab-button').forEach(btn => {
-      btn.classList.toggle('active', btn.id === activeId);
-    });
-  }
-
-  // Initial render
-  renderTeeTimes("saturday");
-
-  // Try to autoplay fix on load
-  window.addEventListener("load", () => {
-    const vid = document.getElementById("background-video");
-    setTimeout(() => {
-      if (vid && vid.paused) {
-        vid.play().catch(err => {
-          console.log("Autoplay failed:", err);
-        });
-      }
-    }, 300);
-  });
-</script>
-
+  </script>
 </body>
 </html>
