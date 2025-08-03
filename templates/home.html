@@ -2,18 +2,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Brisa Tee Times</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-  <video autoplay muted loop playsinline preload="auto" webkit-playsinline id="background-video">
-    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-
   <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+      overflow-x: hidden;
+    }
+
     #background-video {
       position: fixed;
       top: 50%;
@@ -28,17 +28,127 @@
       pointer-events: none;
     }
 
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow-x: hidden;
+    .logo {
+      display: block;
+      margin: 30px auto 10px auto;
+      width: 160px;
+    }
+
+    .tabs {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .tab {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 16px;
+      background-color: #f0f0f0;
+      border: 1px solid black;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background-color: #BA0C2F;
+      color: white;
+    }
+
+    .tee-time-container {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      justify-content: center;
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .tee-time-btn {
+      padding: 12px 24px;
+      font-size: 20px;
+      border: 1px solid black;
+      background: rgba(255, 0, 0, 0.08);
+      border-radius: 6px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      color: black;
     }
   </style>
+</head>
+<body>
+  <video autoplay muted loop playsinline id="background-video">
+    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4" />
+    Your browser does not support the video tag.
+  </video>
 
-  <!-- Your existing content here -->
-  <div class="content">
-    <!-- Placeholder for your existing buttons, tabs, and logo -->
+  <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
+
+  <div class="tabs">
+    <div class="tab active" id="saturday-tab">Saturday</div>
+    <div class="tab" id="sunday-tab">Sunday</div>
   </div>
+
+  <div id="tee-times" class="tee-time-container">
+    <button class="tee-time-btn">6:50am</button>
+    <button class="tee-time-btn">7:00am</button>
+    <button class="tee-time-btn">7:10am</button>
+    <button class="tee-time-btn">7:20am</button>
+    <button class="tee-time-btn">7:30am</button>
+    <button class="tee-time-btn">7:40am</button>
+    <button class="tee-time-btn">7:50am</button>
+    <button class="tee-time-btn">8:00am</button>
+  </div>
+
+  <script>
+    // Tab functionality
+    const saturdayTab = document.getElementById('saturday-tab');
+    const sundayTab = document.getElementById('sunday-tab');
+
+    saturdayTab.addEventListener('click', () => {
+      saturdayTab.classList.add('active');
+      sundayTab.classList.remove('active');
+      // TODO: Load Saturday tee times
+    });
+
+    sundayTab.addEventListener('click', () => {
+      sundayTab.classList.add('active');
+      saturdayTab.classList.remove('active');
+      // TODO: Load Sunday tee times
+    });
+
+    // Video autoplay fallback for iOS
+    window.addEventListener('DOMContentLoaded', () => {
+      const video = document.getElementById('background-video');
+      if (video && video.paused) {
+        video.play().catch(e => {
+          console.warn("Autoplay failed:", e);
+        });
+      }
+    });
+  </script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const video = document.getElementById("background-video");
+
+    if (video) {
+      video.muted = true;
+      video.playsInline = true;
+
+      const playPromise = video.play();
+
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            // Autoplay started!
+          })
+          .catch((error) => {
+            // Autoplay failed, maybe show fallback
+            console.warn("Autoplay prevented:", error);
+          });
+      }
+    }
+  });
+</script>
+
 </body>
 </html>
