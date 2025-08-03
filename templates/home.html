@@ -3,15 +3,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Brisa Tee Times</title>
   <style>
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow-x: hidden;
       font-family: sans-serif;
+      overflow-x: hidden;
     }
 
     #background-video {
@@ -30,29 +30,26 @@
 
     .logo {
       display: block;
-      margin: 20px auto 10px auto;
-      width: 120px;
-      height: auto;
+      margin: 30px auto 10px auto;
+      width: 160px;
     }
 
     .tabs {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
+      text-align: center;
+      margin-bottom: 10px;
     }
 
-    .tab-button {
+    .tab {
+      display: inline-block;
       padding: 10px 20px;
-      margin: 0 5px;
-      border: 1px solid #BA0C2F;
-      background-color: transparent;
-      color: #BA0C2F;
-      cursor: pointer;
+      margin: 0 10px;
       font-size: 16px;
-      border-radius: 6px;
+      background-color: #f0f0f0;
+      border: 1px solid black;
+      cursor: pointer;
     }
 
-    .tab-button.active {
+    .tab.active {
       background-color: #BA0C2F;
       color: white;
     }
@@ -62,23 +59,18 @@
       grid-template-columns: repeat(2, auto);
       justify-content: center;
       gap: 15px;
-      max-width: 500px;
-      margin: 0 auto;
+      padding: 20px;
     }
 
-    .tee-time-button {
-      font-size: 18px;
+    .tee-time-btn {
       padding: 12px 24px;
+      font-size: 20px;
       border: 1px solid black;
-      border-radius: 10px;
-      background: linear-gradient(to bottom right, rgba(255, 0, 0, 0.1), rgba(255, 0, 0, 0.05));
-      color: black;
+      background: rgba(255, 0, 0, 0.08);
+      border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    .tee-time-button:hover {
-      background-color: rgba(255, 0, 0, 0.2);
+      backdrop-filter: blur(4px);
+      color: black;
     }
   </style>
 </head>
@@ -88,39 +80,50 @@
     Your browser does not support the video tag.
   </video>
 
-  <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="LOGO" class="logo" />
+  <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
 
   <div class="tabs">
-    <button class="tab-button active" onclick="showTeeTimes('saturday', this)">Saturday</button>
-    <button class="tab-button" onclick="showTeeTimes('sunday', this)">Sunday</button>
+    <div class="tab active" id="saturday-tab">Saturday</div>
+    <div class="tab" id="sunday-tab">Sunday</div>
   </div>
 
-  <div id="tee-time-list" class="tee-time-container"></div>
+  <div id="tee-times" class="tee-time-container">
+    <button class="tee-time-btn">6:50am</button>
+    <button class="tee-time-btn">7:00am</button>
+    <button class="tee-time-btn">7:10am</button>
+    <button class="tee-time-btn">7:20am</button>
+    <button class="tee-time-btn">7:30am</button>
+    <button class="tee-time-btn">7:40am</button>
+    <button class="tee-time-btn">7:50am</button>
+    <button class="tee-time-btn">8:00am</button>
+  </div>
 
   <script>
-    const teeTimes = {
-      saturday: ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"],
-      sunday: ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"]
-    };
+    // Tab functionality
+    const saturdayTab = document.getElementById('saturday-tab');
+    const sundayTab = document.getElementById('sunday-tab');
 
-    function showTeeTimes(day, button) {
-      const list = document.getElementById("tee-time-list");
-      list.innerHTML = "";
-      teeTimes[day].forEach(time => {
-        const btn = document.createElement("button");
-        btn.textContent = time;
-        btn.className = "tee-time-button";
-        list.appendChild(btn);
-      });
+    saturdayTab.addEventListener('click', () => {
+      saturdayTab.classList.add('active');
+      sundayTab.classList.remove('active');
+      // TODO: Load Saturday tee times
+    });
 
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      button.classList.add('active');
-    }
+    sundayTab.addEventListener('click', () => {
+      sundayTab.classList.add('active');
+      saturdayTab.classList.remove('active');
+      // TODO: Load Sunday tee times
+    });
 
-    window.onload = () => {
-      const saturdayTab = document.querySelector('.tab-button.active');
-      showTeeTimes('saturday', saturdayTab);
-    };
+    // Video autoplay fallback for iOS
+    window.addEventListener('DOMContentLoaded', () => {
+      const video = document.getElementById('background-video');
+      if (video && video.paused) {
+        video.play().catch(e => {
+          console.warn("Autoplay failed:", e);
+        });
+      }
+    });
   </script>
 </body>
 </html>
