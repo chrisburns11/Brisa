@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Brisa Tee Times</title>
   <style>
     body, html {
@@ -13,6 +13,7 @@
       font-family: sans-serif;
       overflow-x: hidden;
     }
+
     #background-video {
       position: fixed;
       top: 50%;
@@ -26,59 +27,50 @@
       z-index: -1;
       pointer-events: none;
     }
-    .content {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      color: white;
-      padding-top: 2rem;
-    }
+
     .logo {
-      max-width: 180px;
-      margin: 0 auto 20px auto;
       display: block;
+      margin: 30px auto 10px auto;
+      width: 160px;
     }
+
     .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      text-align: center;
+      margin-bottom: 10px;
     }
-    .tab-button {
+
+    .tab {
+      display: inline-block;
       padding: 10px 20px;
-      border: 1px solid white;
-      background-color: rgba(255, 255, 255, 0.2);
-      color: white;
+      margin: 0 10px;
+      font-size: 16px;
+      background-color: #f0f0f0;
+      border: 1px solid black;
       cursor: pointer;
     }
-    .tab-button.active {
+
+    .tab.active {
       background-color: #BA0C2F;
+      color: white;
     }
-    .tee-times {
-      display: flex;
-      flex-wrap: wrap;
+
+    .tee-time-container {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
       justify-content: center;
       gap: 15px;
-      max-width: 400px;
-      margin: 0 auto;
+      padding: 20px;
     }
-    .tee-time-button {
-      flex: 0 0 47%;
-      padding: 15px;
-      background: linear-gradient(to right, rgba(255, 0, 0, 0.12), rgba(255, 0, 0, 0.08));
+
+    .tee-time-btn {
+      padding: 12px 24px;
+      font-size: 20px;
       border: 1px solid black;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
+      background: rgba(255, 0, 0, 0.08);
       border-radius: 6px;
-      font-size: 1rem;
-    }
-    @media (max-width: 480px) {
-      .tee-time-button {
-        flex: 0 0 47%;
-        font-size: 0.9rem;
-        padding: 12px;
-      }
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      color: black;
     }
   </style>
 </head>
@@ -88,58 +80,60 @@
     Your browser does not support the video tag.
   </video>
 
-  <div class="content">
-    <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
+  <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
 
-    <div class="tabs">
-      <button class="tab-button active" onclick="showTeeTimes('saturday')">Saturday</button>
-      <button class="tab-button" onclick="showTeeTimes('sunday')">Sunday</button>
-    </div>
+  <div class="tabs">
+    <div class="tab active" id="saturday-tab">Saturday</div>
+    <div class="tab" id="sunday-tab">Sunday</div>
+  </div>
 
-    <div id="tee-time-container">
-      <div class="tee-times" id="saturday-times">
-        <button class="tee-time-button">6:50am</button>
-        <button class="tee-time-button">7:00am</button>
-        <button class="tee-time-button">7:10am</button>
-        <button class="tee-time-button">7:20am</button>
-        <button class="tee-time-button">7:30am</button>
-        <button class="tee-time-button">7:40am</button>
-        <button class="tee-time-button">7:50am</button>
-        <button class="tee-time-button">8:00am</button>
-      </div>
-
-      <div class="tee-times" id="sunday-times" style="display: none;">
-        <button class="tee-time-button">6:50am</button>
-        <button class="tee-time-button">7:00am</button>
-        <button class="tee-time-button">7:10am</button>
-        <button class="tee-time-button">7:20am</button>
-        <button class="tee-time-button">7:30am</button>
-        <button class="tee-time-button">7:40am</button>
-        <button class="tee-time-button">7:50am</button>
-        <button class="tee-time-button">8:00am</button>
-      </div>
-    </div>
+  <div id="tee-times" class="tee-time-container">
+    <button class="tee-time-btn">6:50am</button>
+    <button class="tee-time-btn">7:00am</button>
+    <button class="tee-time-btn">7:10am</button>
+    <button class="tee-time-btn">7:20am</button>
+    <button class="tee-time-btn">7:30am</button>
+    <button class="tee-time-btn">7:40am</button>
+    <button class="tee-time-btn">7:50am</button>
+    <button class="tee-time-btn">8:00am</button>
   </div>
 
   <script>
-    function showTeeTimes(day) {
-      const buttons = document.querySelectorAll('.tab-button');
-      buttons.forEach(btn => btn.classList.remove('active'));
-      document.querySelector(`[onclick="showTeeTimes('${day}')"]`).classList.add('active');
+    // Tab functionality
+    const saturdayTab = document.getElementById('saturday-tab');
+    const sundayTab = document.getElementById('sunday-tab');
 
-      document.getElementById('saturday-times').style.display = (day === 'saturday') ? 'flex' : 'none';
-      document.getElementById('sunday-times').style.display = (day === 'sunday') ? 'flex' : 'none';
-    }
+    saturdayTab.addEventListener('click', () => {
+      saturdayTab.classList.add('active');
+      sundayTab.classList.remove('active');
+      // TODO: Load Saturday tee times
+    });
 
-    // iOS autoplay nudge
-    window.addEventListener('load', () => {
-      const vid = document.getElementById('background-video');
-      setTimeout(() => {
-        if (vid && vid.paused) {
-          vid.play().catch(() => {});
-        }
-      }, 300);
+    sundayTab.addEventListener('click', () => {
+      sundayTab.classList.add('active');
+      saturdayTab.classList.remove('active');
+      // TODO: Load Sunday tee times
+    });
+
+    // Video autoplay fallback for iOS
+    window.addEventListener('DOMContentLoaded', () => {
+      const video = document.getElementById('background-video');
+      if (video && video.paused) {
+        video.play().catch(e => {
+          console.warn("Autoplay failed:", e);
+        });
+      }
     });
   </script>
+
+<script>
+  requestAnimationFrame(() => {
+    const video = document.getElementById('background-video');
+    if (video && video.paused) {
+      video.play().catch(() => {});
+    }
+  });
+</script>
+
 </body>
 </html>
