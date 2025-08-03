@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,18 +13,13 @@
       overflow-x: hidden;
     }
 
-    #background-video {
+    #bg-canvas {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      width: auto;
-      height: auto;
-      min-width: 100%;
-      min-height: 100%;
-      transform: translate(-50%, -50%);
-      object-fit: cover;
+      top: 0;
+      left: 0;
       z-index: -1;
-      pointer-events: none;
+      width: 100%;
+      height: 100%;
     }
 
     .logo {
@@ -75,8 +69,8 @@
   </style>
 </head>
 <body>
-  <video autoplay muted loop playsinline id="background-video">
-    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4" />
+  <canvas id="bg-canvas"></canvas>
+  <video id="bg-video" playsinline muted loop style="display: none">
     <source src="{{ url_for('static', filename='background.webm') }}" type="video/webm" />
     Your browser does not support the video tag.
   </video>
@@ -100,32 +94,53 @@
   </div>
 
   <script>
+    // Draw video frame to canvas for autoplay workaround
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    const video = document.getElementById('bg-video');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    video.addEventListener('play', function () {
+      function drawFrame() {
+        if (!video.paused && !video.ended) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          requestAnimationFrame(drawFrame);
+        }
+      }
+      drawFrame();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.warn('Autoplay attempt failed:', error);
+        });
+      }
+    });
+
+    // Tabs
     const saturdayTab = document.getElementById('saturday-tab');
     const sundayTab = document.getElementById('sunday-tab');
 
     saturdayTab.addEventListener('click', () => {
       saturdayTab.classList.add('active');
       sundayTab.classList.remove('active');
-      // Load Saturday tee times if needed
+      // Load Saturday tee times
     });
 
     sundayTab.addEventListener('click', () => {
       sundayTab.classList.add('active');
       saturdayTab.classList.remove('active');
-      // Load Sunday tee times if needed
+      // Load Sunday tee times
     });
-
-    // Fallback autoplay strategies
-    const ensureVideoAutoplay = () => {
-      const video = document.getElementById('background-video');
-      if (video && video.paused) {
-        video.play().catch(e => console.warn("Autoplay failed:", e));
-      }
-    };
-
-    window.addEventListener('DOMContentLoaded', ensureVideoAutoplay);
-    window.addEventListener('load', ensureVideoAutoplay);
-    requestAnimationFrame(ensureVideoAutoplay);
   </script>
 </body>
 </html>
