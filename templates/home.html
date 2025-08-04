@@ -69,8 +69,8 @@
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
-  <video id="bg-video" playsinline muted loop style="display: none">
-    <source src="{{ url_for('static', filename='background.webm') }}" type="video/webm" />
+  <video id="bg-video" autoplay playsinline muted loop style="display: none">
+    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4" />
     Your browser does not support the video tag.
   </video>
 
@@ -112,10 +112,16 @@
       requestAnimationFrame(drawFrame);
     }
 
-    video.addEventListener('canplay', () => {
-      video.play();
-      drawFrame();
-    });
+    function tryPlayAndDraw() {
+      video.play().then(() => {
+        drawFrame();
+      }).catch((err) => {
+        console.warn("Video play failed", err);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", tryPlayAndDraw);
+    video.addEventListener("loadeddata", tryPlayAndDraw);
 
     // Tab functionality
     const saturdayTab = document.getElementById('saturday-tab');
