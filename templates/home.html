@@ -18,6 +18,8 @@
       position: fixed;
       top: 0;
       left: 0;
+      width: 100%;
+      height: 100%;
       z-index: -1;
     }
 
@@ -65,13 +67,52 @@
       backdrop-filter: blur(4px);
       color: black;
     }
+
+    .players-container {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .add-player-btn {
+      padding: 6px 12px;
+      font-size: 14px;
+      background-color: #e6e6e6;
+      border: 1px solid black;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .player-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .remove-btn {
+      margin-top: 4px;
+      font-size: 12px;
+      color: red;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    select {
+      font-size: 14px;
+      padding: 4px;
+    }
   </style>
 </head>
 <body>
   <canvas id="bg-canvas"></canvas>
-  <video id="bg-video" autoplay playsinline muted loop style="display: none">
+  <video id="bg-video" autoplay playsinline muted loop style="visibility: hidden; position: absolute; top: -9999px; left: -9999px;">
     <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4" />
-    Your browser does not support the video tag.
   </video>
 
   <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
@@ -81,20 +122,11 @@
     <div class="tab" id="sunday-tab">Sunday</div>
   </div>
 
-  <div id="tee-times" class="tee-time-container">
-    <button class="tee-time-btn">6:50am</button>
-    <button class="tee-time-btn">7:00am</button>
-    <button class="tee-time-btn">7:10am</button>
-    <button class="tee-time-btn">7:20am</button>
-    <button class="tee-time-btn">7:30am</button>
-    <button class="tee-time-btn">7:40am</button>
-    <button class="tee-time-btn">7:50am</button>
-    <button class="tee-time-btn">8:00am</button>
-  </div>
+  <div id="tee-times" class="tee-time-container"></div>
 
   <script>
-    const video = document.getElementById('bg-video');
     const canvas = document.getElementById('bg-canvas');
+    const video = document.getElementById('bg-video');
     const ctx = canvas.getContext('2d');
 
     function resizeCanvas() {
@@ -112,30 +144,92 @@
       requestAnimationFrame(drawFrame);
     }
 
-    function tryPlayAndDraw() {
-      video.play().then(() => {
-        drawFrame();
-      }).catch((err) => {
-        console.warn("Video play failed", err);
+    video.addEventListener('loadeddata', () => {
+      video.play().then(() => drawFrame());
+    });
+
+    const saturdayTab = document.getElementById('saturday-tab');
+    const sundayTab = document.getElementById('sunday-tab');
+    const teeTimesContainer = document.getElementById('tee-times');
+    let allPlayers = [];
+    let usedPlayers = { Saturday: {}, Sunday: {} };
+    let currentDay = 'Saturday';
+
+    function createTeeTimeButton(time) {
+      const btn = document.createElement('button');
+      btn.className = 'tee-time-btn';
+      btn.textContent = time;
+      btn.addEventListener('click', () => {
+        const container = document.createElement('div');
+        container.className = 'players-container';
+        for (let i = 0; i < 4; i++) {
+          const slot = document.createElement('div');
+          slot.className = 'player-slot';
+          const addBtn = document.createElement('button');
+          addBtn.className = 'add-player-btn';
+          addBtn.innerHTML = '&#43; Add Player';
+          addBtn.addEventListener('click', () => {
+            const select = document.createElement('select');
+            const availablePlayers = allPlayers.filter(p => !Object.values(usedPlayers[currentDay]).includes(p));
+            availablePlayers.sort((a, b) => a.localeCompare(b));
+            select.innerHTML = '<option disabled selected>Select player</option>';
+            availablePlayers.forEach(player => {
+              const option = document.createElement('option');
+              option.value = player;
+              option.textContent = player;
+              select.appendChild(option);
+            });
+            select.addEventListener('change', () => {
+              const selectedPlayer = select.value;
+              slot.innerHTML = selectedPlayer;
+              usedPlayers[currentDay][`${time}-${i}`] = selectedPlayer;
+              const removeBtn = document.createElement('button');
+              removeBtn.className = 'remove-btn';
+              removeBtn.textContent = 'Remove Player';
+              removeBtn.addEventListener('click', () => {
+                delete usedPlayers[currentDay][`${time}-${i}`];
+                slot.innerHTML = '';
+                slot.appendChild(addBtn);
+              });
+              slot.appendChild(removeBtn);
+            });
+            slot.innerHTML = '';
+            slot.appendChild(select);
+          });
+          slot.appendChild(addBtn);
+          container.appendChild(slot);
+        }
+        btn.replaceWith(container);
+      });
+      return btn;
+    }
+
+    function loadTeeTimes(day) {
+      fetch(`/get_players?day=${day}`).then(res => res.json()).then(data => {
+        allPlayers = data.players;
+        teeTimesContainer.innerHTML = '';
+        data.tee_times.forEach(time => {
+          const btn = createTeeTimeButton(time);
+          teeTimesContainer.appendChild(btn);
+        });
       });
     }
 
-    document.addEventListener("DOMContentLoaded", tryPlayAndDraw);
-    video.addEventListener("loadeddata", tryPlayAndDraw);
-
-    // Tab functionality
-    const saturdayTab = document.getElementById('saturday-tab');
-    const sundayTab = document.getElementById('sunday-tab');
-
     saturdayTab.addEventListener('click', () => {
+      currentDay = 'Saturday';
       saturdayTab.classList.add('active');
       sundayTab.classList.remove('active');
+      loadTeeTimes('Saturday');
     });
 
     sundayTab.addEventListener('click', () => {
+      currentDay = 'Sunday';
       sundayTab.classList.add('active');
       saturdayTab.classList.remove('active');
+      loadTeeTimes('Sunday');
     });
+
+    loadTeeTimes(currentDay);
   </script>
 </body>
 </html>
