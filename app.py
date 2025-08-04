@@ -2,6 +2,7 @@ import os
 import json
 import pandas as pd
 import gspread
+import codecs
 from google.oauth2.service_account import Credentials
 from flask import Flask, request, jsonify, render_template
 from flask_mail import Mail, Message
@@ -27,7 +28,7 @@ twilio_number = os.getenv("TWILIO_NUMBER")
 # Google Sheets setup
 scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 google_creds = Credentials.from_service_account_info(
-    json.loads(os.getenv("GOOGLE_CREDENTIALS")),
+    json.loads(codecs.decode(os.getenv("GOOGLE_CREDENTIALS"), 'unicode_escape')),
     scopes=scopes
 )
 gc = gspread.authorize(google_creds)
