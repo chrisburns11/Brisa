@@ -35,7 +35,7 @@ gc = gspread.authorize(google_creds)
 
 @app.route('/')
 def index():
-    return render_template("index.html")
+    return render_template("home.html")
 
 @app.route('/load_players', methods=['POST'])
 def load_players():
