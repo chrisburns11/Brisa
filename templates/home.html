@@ -3,233 +3,108 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Brisa Tee Times</title>
   <style>
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: sans-serif;
       overflow-x: hidden;
+      font-family: Arial, sans-serif;
     }
 
-    #bg-canvas {
+    #background-video {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 50%;
+      left: 50%;
+      width: auto;
+      height: auto;
+      min-width: 100%;
+      min-height: 100%;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
       z-index: -1;
+      pointer-events: none;
     }
 
-    .logo {
-      display: block;
-      margin: 30px auto 10px auto;
-      width: 160px;
-    }
-
-    .tabs {
+    .content {
+      position: relative;
+      z-index: 1;
+      padding-top: 60px;
       text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .tab {
-      display: inline-block;
-      padding: 10px 20px;
-      margin: 0 10px;
-      font-size: 16px;
-      background-color: #f0f0f0;
-      border: 1px solid black;
-      cursor: pointer;
-    }
-
-    .tab.active {
-      background-color: #BA0C2F;
       color: white;
     }
 
-    .tee-time-container {
-      display: grid;
-      grid-template-columns: repeat(2, auto);
-      justify-content: center;
-      gap: 15px;
-      padding: 20px;
+    .logo {
+      width: 160px;
+      margin-bottom: 20px;
     }
 
-    .tee-time-btn {
-      padding: 12px 24px;
-      font-size: 20px;
-      border: 1px solid black;
-      background: rgba(255, 0, 0, 0.08);
-      border-radius: 6px;
-      cursor: pointer;
-      backdrop-filter: blur(4px);
-      color: black;
-    }
-
-    .players-container {
-      margin-top: 10px;
+    .tabs {
       display: flex;
+      justify-content: center;
       gap: 10px;
-      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      background-color: #f5f5f5cc;
+      padding: 10px 20px;
+      border: 1px solid #000;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .tab.active {
+      background-color: #ba0c2f;
+      color: white;
+    }
+
+    .tee-time-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(140px, 1fr));
+      gap: 20px;
       justify-content: center;
+      max-width: 400px;
+      margin: 0 auto;
     }
 
-    .add-player-btn {
-      padding: 6px 12px;
-      font-size: 14px;
-      background-color: #e6e6e6;
+    .tee-time {
+      background: linear-gradient(to right, rgba(255,0,0,0.08), rgba(255,0,0,0.08));
       border: 1px solid black;
-      border-radius: 4px;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 18px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .player-slot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .remove-btn {
-      margin-top: 4px;
-      font-size: 12px;
-      color: red;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
-
-    select {
-      font-size: 14px;
-      padding: 4px;
     }
   </style>
 </head>
 <body>
-  <canvas id="bg-canvas"></canvas>
-  <video id="bg-video" autoplay playsinline muted loop style="visibility: hidden; position: absolute; top: -9999px; left: -9999px;">
-    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4" />
+  <video autoplay muted loop playsinline id="background-video">
+    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+    Your browser does not support the video tag.
   </video>
 
-  <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
+  <div class="content">
+    <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
 
-  <div class="tabs">
-    <div class="tab active" id="saturday-tab">Saturday</div>
-    <div class="tab" id="sunday-tab">Sunday</div>
+    <div class="tabs">
+      <div class="tab active">Saturday</div>
+      <div class="tab">Sunday</div>
+    </div>
+
+    <div class="tee-time-grid">
+      <div class="tee-time">6:50am</div>
+      <div class="tee-time">7:00am</div>
+      <div class="tee-time">7:10am</div>
+      <div class="tee-time">7:20am</div>
+      <div class="tee-time">7:30am</div>
+      <div class="tee-time">7:40am</div>
+      <div class="tee-time">7:50am</div>
+      <div class="tee-time">8:00am</div>
+    </div>
   </div>
-
-  <div id="tee-times" class="tee-time-container"></div>
-
-  <script>
-    const canvas = document.getElementById('bg-canvas');
-    const video = document.getElementById('bg-video');
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    function drawFrame() {
-      if (!video.paused && !video.ended) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      }
-      requestAnimationFrame(drawFrame);
-    }
-
-    video.addEventListener('loadeddata', () => {
-      video.play().then(() => drawFrame());
-    });
-
-    const saturdayTab = document.getElementById('saturday-tab');
-    const sundayTab = document.getElementById('sunday-tab');
-    const teeTimesContainer = document.getElementById('tee-times');
-    let allPlayers = [];
-    let usedPlayers = { Saturday: {}, Sunday: {} };
-    let currentDay = 'Saturday';
-
-    function createTeeTimeButton(time) {
-      const btn = document.createElement('button');
-      btn.className = 'tee-time-btn';
-      btn.textContent = time;
-      btn.addEventListener('click', () => {
-        const container = document.createElement('div');
-        container.className = 'players-container';
-        for (let i = 0; i < 4; i++) {
-          const slot = document.createElement('div');
-          slot.className = 'player-slot';
-          const addBtn = document.createElement('button');
-          addBtn.className = 'add-player-btn';
-          addBtn.innerHTML = '&#43; Add Player';
-          addBtn.addEventListener('click', () => {
-            const select = document.createElement('select');
-            const availablePlayers = allPlayers.filter(p => !Object.values(usedPlayers[currentDay]).includes(p));
-            availablePlayers.sort((a, b) => a.localeCompare(b));
-            select.innerHTML = '<option disabled selected>Select player</option>';
-            availablePlayers.forEach(player => {
-              const option = document.createElement('option');
-              option.value = player;
-              option.textContent = player;
-              select.appendChild(option);
-            });
-            select.addEventListener('change', () => {
-              const selectedPlayer = select.value;
-              slot.innerHTML = selectedPlayer;
-              usedPlayers[currentDay][`${time}-${i}`] = selectedPlayer;
-              const removeBtn = document.createElement('button');
-              removeBtn.className = 'remove-btn';
-              removeBtn.textContent = 'Remove Player';
-              removeBtn.addEventListener('click', () => {
-                delete usedPlayers[currentDay][`${time}-${i}`];
-                slot.innerHTML = '';
-                slot.appendChild(addBtn);
-              });
-              slot.appendChild(removeBtn);
-            });
-            slot.innerHTML = '';
-            slot.appendChild(select);
-          });
-          slot.appendChild(addBtn);
-          container.appendChild(slot);
-        }
-        btn.replaceWith(container);
-      });
-      return btn;
-    }
-
-    function loadTeeTimes(day) {
-      fetch(`/get_players?day=${day}`).then(res => res.json()).then(data => {
-        allPlayers = data.players;
-        teeTimesContainer.innerHTML = '';
-        data.tee_times.forEach(time => {
-          const btn = createTeeTimeButton(time);
-          teeTimesContainer.appendChild(btn);
-        });
-      });
-    }
-
-    saturdayTab.addEventListener('click', () => {
-      currentDay = 'Saturday';
-      saturdayTab.classList.add('active');
-      sundayTab.classList.remove('active');
-      loadTeeTimes('Saturday');
-    });
-
-    sundayTab.addEventListener('click', () => {
-      currentDay = 'Sunday';
-      sundayTab.classList.add('active');
-      saturdayTab.classList.remove('active');
-      loadTeeTimes('Sunday');
-    });
-
-    loadTeeTimes(currentDay);
-  </script>
 </body>
 </html>
