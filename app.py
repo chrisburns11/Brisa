@@ -27,8 +27,8 @@ twilio_number = os.getenv("TWILIO_NUMBER")
 
 # Google Sheets setup
 scopes = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-google_creds = Credentials.from_service_account_info(
-    json.loads(codecs.decode(os.getenv("GOOGLE_CREDENTIALS"), 'unicode_escape')),
+google_creds = Credentials.from_service_account_file(
+    os.getenv("GOOGLE_CREDS_PATH"),
     scopes=scopes
 )
 gc = gspread.authorize(google_creds)
@@ -59,7 +59,7 @@ def send_confirmation():
                       sender=app.config['MAIL_USERNAME'],
                       recipients=[recipient_email])
         msg.body = f"Hi {recipient_name},\n\nYou're confirmed for {tee_time}.\n\nPlayers:\n" + \
-                   "\n".join([f"{p['name']} ({p['country']})" for p in players])
+                   "\n".join([f"{p['Last Name']}, {p['First Name']} ({p['Country']})" for p in players])
         mail.send(msg)
     except Exception as e:
         print(f"Email failed: {e}")
