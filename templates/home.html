@@ -9,23 +9,22 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow-x: hidden;
       font-family: Arial, sans-serif;
-      background-color: #000;
+      background-color: transparent;
+      overflow-x: hidden;
     }
 
     #background-video {
       position: fixed;
       top: 50%;
       left: 50%;
-      width: auto;
-      height: auto;
       min-width: 100%;
       min-height: 100%;
+      width: auto;
+      height: auto;
+      z-index: -1;
       transform: translate(-50%, -50%);
       object-fit: cover;
-      z-index: -1;
-      pointer-events: none;
     }
 
     .content {
@@ -71,17 +70,24 @@
       margin: 0 auto;
     }
 
-    .tee-time {
-      background: rgba(255,255,255,0.8);
-      border: 1px solid black;
-      padding: 15px;
-      border-radius: 8px;
-      font-size: 18px;
-      cursor: pointer;
-    }
+.tee-time {
+  background: linear-gradient(135deg, rgba(186, 12, 47, 0.2), rgba(255, 100, 100, 0.1));
+  border: 1px solid black;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.tee-time:hover {
+  background: linear-gradient(135deg, rgba(186, 12, 47, 0.3), rgba(255, 100, 100, 0.2));
+}
+
 
     .player-buttons {
       margin-top: 10px;
+      display: none;
     }
 
     .add-player-btn {
@@ -144,19 +150,33 @@
   function createTeeTimeElement(teeTime) {
     const container = document.createElement('div');
     container.className = 'tee-time';
-    container.innerHTML = `<strong>${teeTime}</strong>`;
+
+    const timeHeader = document.createElement('div');
+    timeHeader.innerHTML = `<strong>${teeTime}</strong>`;
+    timeHeader.style.cursor = 'pointer';
 
     const buttonsDiv = document.createElement('div');
     buttonsDiv.className = 'player-buttons';
+
+ let isExpanded = false;
+timeHeader.addEventListener('click', (e) => {
+  e.stopPropagation();
+  isExpanded = !isExpanded;
+  buttonsDiv.style.display = isExpanded ? 'block' : 'none';
+});
 
     for (let i = 0; i < 4; i++) {
       const btn = document.createElement('button');
       btn.className = 'add-player-btn';
       btn.innerHTML = '<span>➕</span> Add Player';
-      btn.addEventListener('click', () => showDropdown(btn, teeTime, i));
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showDropdown(btn, teeTime, i);
+      });
       buttonsDiv.appendChild(btn);
     }
 
+    container.appendChild(timeHeader);
     container.appendChild(buttonsDiv);
     return container;
   }
@@ -167,7 +187,7 @@
     playersData.forEach(p => {
       const option = document.createElement('option');
       option.value = JSON.stringify(p);
-      option.textContent = `${p.last_name}, ${p.first_name} (${p.country})`;
+      option.textContent = `${p.last_name}, ${p.first_name} ${p.country}`;
       select.appendChild(option);
     });
 
@@ -184,7 +204,7 @@
       selectedPlayers[currentDay][teeTime][slotIndex] = selected;
 
       const nameDisplay = document.createElement('div');
-      nameDisplay.textContent = `${selected.first_name} ${selected.last_name} (${selected.country})`;
+      nameDisplay.textContent = `${selected.first_name} ${selected.last_name} ${selected.country}`;
 
       const remove = document.createElement('span');
       remove.className = 'remove-player';
@@ -195,7 +215,7 @@
       });
 
       nameDisplay.appendChild(remove);
-      button.replaceWith(nameDisplay);
+      select.replaceWith(nameDisplay);
     });
 
     button.replaceWith(select);
@@ -217,7 +237,7 @@
     });
     playersData = await res.json();
 
-    const teeTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am"];
+    const teeTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am", "8:10am", "8:20am"];
     teeTimeGrid.innerHTML = "";
     teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
   }
