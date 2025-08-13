@@ -37,7 +37,9 @@ twilio_client = Client(TWILIO_SID, TWILIO_AUTH) if (TWILIO_SID and TWILIO_AUTH) 
 # Google Sheets setup
 # -------------------------
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
-SHEET_ID = os.getenv("SHEET_ID")
+
+# Accept either a full Sheets URL or the bare spreadsheet ID
+SHEET_REF = os.getenv("SHEET_URL") or os.getenv("SHEET_ID")
 
 def build_google_creds():
     """Build Credentials from env JSON, else optional file path (local dev)."""
@@ -59,19 +61,25 @@ def build_google_creds():
     )
 
 def get_gspread_client():
-    """Lazy-init and cache the gspread client so import-time failures don’t kill Gunicorn."""
+    """
+    Lazy-init and cache the gspread client so import-time failures
+    don’t crash Gunicorn.
+    """
     if not hasattr(get_gspread_client, "_client"):
         creds = build_google_creds()
         get_gspread_client._client = gspread.authorize(creds)
     return get_gspread_client._client
 
 def _open_sheet(gc, ref: str):
-    """Accept a bare spreadsheet ID, a full URL, or even a URL without scheme."""
+    """Open a Google Sheet from a bare key or a full docs.google.com URL."""
     ref = (ref or "").strip().strip('"').strip("'")
+    if not ref:
+        raise ValueError("SHEET_URL/SHEET_ID not configured")
     if ref.startswith(("http://", "https://")) or "docs.google.com" in ref:
         if not ref.startswith(("http://", "https://")):
             ref = "https://" + ref
         return gc.open_by_url(ref)
+    # otherwise treat as bare key
     return gc.open_by_key(ref)
 
 # -------------------------
@@ -84,28 +92,29 @@ def index():
 @app.route("/load_players", methods=["POST"])
 def load_players():
     try:
-        day = request.json.get("day")
+        day = (request.json or {}).get("day")
         if not day:
             return jsonify({"error": "Missing 'day'"}), 400
-        if not SHEET_ID:
+        if not SHEET_REF:
             return jsonify({"error": "SHEET_ID not configured"}), 500
 
         gc = get_gspread_client()
-        sh = _open_sheet(gc, SHEET_ID)
+        sh = _open_sheet(gc, SHEET_REF)
         sheet = sh.worksheet(day)
         raw_data = sheet.get_all_records()
 
         cleaned_data = [
             {
-                "first_name": row.get("First Name", "").strip(),
-                "last_name": row.get("Last Name", "").strip(),
-                "country": row.get("Country", "").strip(),
+                "first_name": (row.get("First Name") or "").strip(),
+                "last_name": (row.get("Last Name") or "").strip(),
+                "country": (row.get("Country") or "").strip(),
             }
             for row in raw_data
-            if row.get("First Name") and row.get("Last Name")
+            if (row.get("First Name") and row.get("Last Name"))
         ]
         return jsonify(cleaned_data)
     except Exception as e:
+        # Log full error to server logs
         print(f"/load_players error: {e}")
         # TEMP: expose real error if SHOW_ERRORS=1
         if os.getenv("SHOW_ERRORS") == "1":
@@ -127,7 +136,7 @@ def send_confirmation():
 
     # Build player list text
     players_text = "\n".join(
-        f"{p.get('last_name','').strip()}, {p.get('first_name','').strip()} ({p.get('country','').strip()})"
+        f"{(p.get('last_name') or '').strip()}, {(p.get('first_name') or '').strip()} ({(p.get('country') or '').strip()})"
         for p in players
         if p.get("first_name") and p.get("last_name")
     )
@@ -166,11 +175,15 @@ def healthz():
 def debug_google():
     try:
         gc = get_gspread_client()
-        sh = _open_sheet(gc, SHEET_ID)
+        sh = _open_sheet(gc, SHEET_REF)
         tabs = [ws.title for ws in sh.worksheets()]
-        return {"sheet_id_set": bool(SHEET_ID), "tabs": tabs}, 200
+        return {"sheet_ref_set": bool(SHEET_REF), "tabs": tabs}, 200
     except Exception as e:
-        return {"sheet_id_set": bool(SHEET_ID), "error_type": type(e).__name__, "error": str(e)}, 500
+        return {
+            "sheet_ref_set": bool(SHEET_REF),
+            "error_type": type(e).__name__,
+            "error": str(e),
+        }, 500
 
 if __name__ == "__main__":
     app.run(debug=True)
