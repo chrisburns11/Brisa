@@ -1,6 +1,9 @@
+cat > app.py <<'PY'
 import os
+import re
 import json
 import gspread
+from urllib.parse import urlparse, parse_qs
 from google.oauth2.service_account import Credentials
 from flask import Flask, request, jsonify, render_template
 from flask_mail import Mail, Message
@@ -19,7 +22,6 @@ app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-# Optional: default sender
 if os.getenv("MAIL_USERNAME"):
     app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_USERNAME")
 
@@ -61,26 +63,64 @@ def build_google_creds():
     )
 
 def get_gspread_client():
-    """
-    Lazy-init and cache the gspread client so import-time failures
-    don’t crash Gunicorn.
-    """
+    """Lazy-init and cache the gspread client so import-time failures don’t kill Gunicorn."""
     if not hasattr(get_gspread_client, "_client"):
         creds = build_google_creds()
         get_gspread_client._client = gspread.authorize(creds)
     return get_gspread_client._client
 
+# ---- Robust ID extraction ----
+_SPREADSHEET_ID_RE = re.compile(r"/spreadsheets/d/([a-zA-Z0-9-_]+)")
+
+def _extract_sheet_id(ref: str) -> str | None:
+    """
+    Return the spreadsheet ID from:
+      - https://docs.google.com/spreadsheets/d/<ID>/edit...
+      - https://drive.google.com/open?id=<ID>
+      - drive.google.com/file/d/<ID>/view
+      - or return ref if it already looks like a bare ID
+    """
+    if not ref:
+        return None
+    s = ref.strip().strip('"').strip("'")
+
+    # Bare ID (heuristic)
+    if "/" not in s and "google.com" not in s and len(s) >= 30:
+        return s
+
+    # Parse URLs
+    if "google.com" in s:
+        if not s.startswith(("http://", "https://")):
+            s = "https://" + s
+        u = urlparse(s)
+
+        # docs.google.com/spreadsheets/d/<ID>
+        m = _SPREADSHEET_ID_RE.search(u.path)
+        if m:
+            return m.group(1)
+
+        # drive.google.com/open?id=<ID>
+        qs = parse_qs(u.query or "")
+        if "id" in qs and qs["id"]:
+            return qs["id"][0]
+
+        # drive.google.com/file/d/<ID>/view
+        m2 = re.search(r"/file/d/([a-zA-Z0-9-_]+)", u.path)
+        if m2:
+            return m2.group(1)
+
+    return None
+
 def _open_sheet(gc, ref: str):
-    """Open a Google Sheet from a bare key or a full docs.google.com URL."""
-    ref = (ref or "").strip().strip('"').strip("'")
+    """Always resolve to a spreadsheet ID and open by key (works for URL or ID)."""
+    ref = (ref or "").strip()
     if not ref:
         raise ValueError("SHEET_URL/SHEET_ID not configured")
-    if ref.startswith(("http://", "https://")) or "docs.google.com" in ref:
-        if not ref.startswith(("http://", "https://")):
-            ref = "https://" + ref
-        return gc.open_by_url(ref)
-    # otherwise treat as bare key
-    return gc.open_by_key(ref)
+
+    sid = _extract_sheet_id(ref)
+    if not sid:
+        raise ValueError("Could not extract a spreadsheet ID from SHEET_URL/SHEET_ID")
+    return gc.open_by_key(sid)
 
 # -------------------------
 # Routes
@@ -92,7 +132,8 @@ def index():
 @app.route("/load_players", methods=["POST"])
 def load_players():
     try:
-        day = (request.json or {}).get("day")
+        data = request.json or {}
+        day = data.get("day")
         if not day:
             return jsonify({"error": "Missing 'day'"}), 400
         if not SHEET_REF:
@@ -114,9 +155,7 @@ def load_players():
         ]
         return jsonify(cleaned_data)
     except Exception as e:
-        # Log full error to server logs
         print(f"/load_players error: {e}")
-        # TEMP: expose real error if SHOW_ERRORS=1
         if os.getenv("SHOW_ERRORS") == "1":
             return jsonify({"error": str(e)}), 500
         return jsonify({"error": "Failed to load players"}), 500
@@ -130,18 +169,15 @@ def send_confirmation():
     recipient_name = data.get("name") or "there"
     phone = data.get("phone")
 
-    # Basic validation
     if not tee_time or not recipient_email:
         return jsonify({"error": "Missing tee_time or email"}), 400
 
-    # Build player list text
     players_text = "\n".join(
         f"{(p.get('last_name') or '').strip()}, {(p.get('first_name') or '').strip()} ({(p.get('country') or '').strip()})"
         for p in players
         if p.get("first_name") and p.get("last_name")
     )
 
-    # Email
     try:
         msg = Message("Brisa Tee Time Confirmation", recipients=[recipient_email])
         msg.body = (
@@ -153,7 +189,6 @@ def send_confirmation():
     except Exception as e:
         print(f"Email failed: {e}")
 
-    # SMS
     try:
         if phone and twilio_client and TWILIO_NUMBER:
             twilio_client.messages.create(
@@ -166,7 +201,6 @@ def send_confirmation():
 
     return jsonify({"status": "success"})
 
-# Optional: simple health check endpoint for Render
 @app.route("/healthz")
 def healthz():
     return "ok", 200
@@ -175,9 +209,12 @@ def healthz():
 def debug_google():
     try:
         gc = get_gspread_client()
+        sid = _extract_sheet_id(SHEET_REF or "")
         sh = _open_sheet(gc, SHEET_REF)
         tabs = [ws.title for ws in sh.worksheets()]
-        return {"sheet_ref_set": bool(SHEET_REF), "tabs": tabs}, 200
+        preview = (sid[-6:] if sid and len(sid) >= 6 else sid)  # avoid leaking full ID
+        kind = "url" if ("google.com" in (SHEET_REF or "")) else "id"
+        return {"sheet_ref_set": bool(SHEET_REF), "ref_kind": kind, "id_preview": preview, "tabs": tabs}, 200
     except Exception as e:
         return {
             "sheet_ref_set": bool(SHEET_REF),
@@ -187,3 +224,4 @@ def debug_google():
 
 if __name__ == "__main__":
     app.run(debug=True)
+PY
