@@ -19,7 +19,7 @@ app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-# Optional: set default sender to avoid needing 'sender=' each time
+# Optional: default sender
 if os.getenv("MAIL_USERNAME"):
     app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_USERNAME")
 
@@ -34,19 +34,19 @@ TWILIO_NUMBER = os.getenv("TWILIO_NUMBER")
 twilio_client = Client(TWILIO_SID, TWILIO_AUTH) if (TWILIO_SID and TWILIO_AUTH) else None
 
 # -------------------------
-# Google Sheets setup (env JSON first; path fallback for local)
+# Google Sheets setup
 # -------------------------
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 SHEET_ID = os.getenv("SHEET_ID")
 
 def build_google_creds():
     """Build Credentials from env JSON, else optional file path (local dev)."""
-    raw = os.getenv("GOOGLE_CREDS_JSON")
+    raw = os.getenv("GOOGLE_CREDS_JSON") or os.getenv("GOOGLE_CREDENTIALS")
     if raw:
         try:
             info = json.loads(raw)
         except json.JSONDecodeError as e:
-            raise RuntimeError("GOOGLE_CREDS_JSON is not valid JSON") from e
+            raise RuntimeError("GOOGLE_CREDS_JSON/GOOGLE_CREDENTIALS is not valid JSON") from e
         return Credentials.from_service_account_info(info, scopes=SCOPES)
 
     path = os.getenv("GOOGLE_CREDS_PATH")
@@ -54,8 +54,8 @@ def build_google_creds():
         return Credentials.from_service_account_file(path, scopes=SCOPES)
 
     raise RuntimeError(
-        "No Google credentials found. Set GOOGLE_CREDS_JSON (preferred) "
-        "or GOOGLE_CREDS_PATH."
+        "No Google credentials found. Set GOOGLE_CREDS_JSON (preferred), "
+        "GOOGLE_CREDENTIALS, or GOOGLE_CREDS_PATH."
     )
 
 def get_gspread_client():
@@ -64,6 +64,15 @@ def get_gspread_client():
         creds = build_google_creds()
         get_gspread_client._client = gspread.authorize(creds)
     return get_gspread_client._client
+
+def _open_sheet(gc, ref: str):
+    """Accept a bare spreadsheet ID, a full URL, or even a URL without scheme."""
+    ref = (ref or "").strip().strip('"').strip("'")
+    if ref.startswith(("http://", "https://")) or "docs.google.com" in ref:
+        if not ref.startswith(("http://", "https://")):
+            ref = "https://" + ref
+        return gc.open_by_url(ref)
+    return gc.open_by_key(ref)
 
 # -------------------------
 # Routes
@@ -82,7 +91,8 @@ def load_players():
             return jsonify({"error": "SHEET_ID not configured"}), 500
 
         gc = get_gspread_client()
-        sheet = gc.open_by_key(SHEET_ID).worksheet(day)
+        sh = _open_sheet(gc, SHEET_ID)
+        sheet = sh.worksheet(day)
         raw_data = sheet.get_all_records()
 
         cleaned_data = [
@@ -96,8 +106,10 @@ def load_players():
         ]
         return jsonify(cleaned_data)
     except Exception as e:
-        # Don’t leak secrets; give a helpful message for logs and a generic error to client
         print(f"/load_players error: {e}")
+        # TEMP: expose real error if SHOW_ERRORS=1
+        if os.getenv("SHOW_ERRORS") == "1":
+            return jsonify({"error": str(e)}), 500
         return jsonify({"error": "Failed to load players"}), 500
 
 @app.route("/send_confirmation", methods=["POST"])
@@ -154,7 +166,7 @@ def healthz():
 def debug_google():
     try:
         gc = get_gspread_client()
-        sh = gc.open_by_key(SHEET_ID)
+        sh = _open_sheet(gc, SHEET_ID)
         tabs = [ws.title for ws in sh.worksheets()]
         return {"sheet_id_set": bool(SHEET_ID), "tabs": tabs}, 200
     except Exception as e:
