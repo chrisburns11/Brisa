@@ -1,4 +1,3 @@
-cat > app.py <<'PY'
 import os
 import re
 import json
@@ -224,4 +223,3 @@ def debug_google():
 
 if __name__ == "__main__":
     app.run(debug=True)
-PY
