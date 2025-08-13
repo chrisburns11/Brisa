@@ -150,5 +150,15 @@ def send_confirmation():
 def healthz():
     return "ok", 200
 
+@app.route("/debug-google")
+def debug_google():
+    try:
+        gc = get_gspread_client()
+        sh = gc.open_by_key(SHEET_ID)
+        tabs = [ws.title for ws in sh.worksheets()]
+        return {"sheet_id_set": bool(SHEET_ID), "tabs": tabs}, 200
+    except Exception as e:
+        return {"sheet_id_set": bool(SHEET_ID), "error_type": type(e).__name__, "error": str(e)}, 500
+
 if __name__ == "__main__":
     app.run(debug=True)
