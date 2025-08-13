@@ -54,6 +54,7 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
+      color: #000;
     }
 
     .tab.active {
@@ -66,24 +67,29 @@
       grid-template-columns: repeat(2, minmax(140px, 1fr));
       gap: 20px;
       justify-content: center;
-      max-width: 400px;
+      max-width: 420px;
       margin: 0 auto;
     }
 
-.tee-time {
-  background: linear-gradient(135deg, rgba(186, 12, 47, 0.2), rgba(255, 100, 100, 0.1));
-  border: 1px solid black;
-  padding: 15px;
-  border-radius: 8px;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
+    .tee-time {
+      background: linear-gradient(135deg, rgba(186, 12, 47, 0.2), rgba(255, 100, 100, 0.1));
+      border: 1px solid black;
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-align: left;
+    }
 
-.tee-time:hover {
-  background: linear-gradient(135deg, rgba(186, 12, 47, 0.3), rgba(255, 100, 100, 0.2));
-}
+    .tee-time:hover {
+      background: linear-gradient(135deg, rgba(186, 12, 47, 0.3), rgba(255, 100, 100, 0.2));
+    }
 
+    .tee-time h3 {
+      margin: 0 0 6px 0;
+      font-size: 18px;
+    }
 
     .player-buttons {
       margin-top: 10px;
@@ -94,7 +100,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      margin: 4px;
+      margin: 4px 6px 4px 0;
       padding: 4px 8px;
       font-size: 14px;
       background-color: #eee;
@@ -104,15 +110,45 @@
     }
 
     .remove-player {
-      color: red;
+      color: #ffdddd;
+      font-weight: bold;
       font-size: 12px;
-      margin-left: 6px;
+      margin-left: 8px;
       cursor: pointer;
     }
 
     select {
       margin-top: 5px;
       padding: 4px;
+      max-width: 100%;
+    }
+
+    .confirm-row {
+      margin-top: 12px;
+      display: none;
+      text-align: right;
+    }
+
+    .confirm-btn {
+      background-color: #ba0c2f;
+      color: #fff;
+      border: 1px solid #000;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .error-banner {
+      display: none;
+      max-width: 560px;
+      margin: 0 auto 14px auto;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid #ffaaaa;
+      color: #ffdddd;
+      border-radius: 6px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -128,120 +164,265 @@
     <div class="tab active" data-day="Saturday">Saturday</div>
     <div class="tab" data-day="Sunday">Sunday</div>
   </div>
+
+  <div id="errorBanner" class="error-banner"></div>
+
   <div class="tee-time-grid" id="teeTimeGrid"></div>
 </div>
 
 <script>
   const teeTimeGrid = document.getElementById('teeTimeGrid');
   const tabs = document.querySelectorAll('.tab');
+  const errorBanner = document.getElementById('errorBanner');
+
   let playersData = [];
-  let selectedPlayers = { Saturday: {}, Sunday: {} };
+  const selectedPlayers = { Saturday: {}, Sunday: {} };
   let currentDay = 'Saturday';
 
+  // Tab switching
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       currentDay = tab.dataset.day;
-      loadPlayers();
+      renderGrid();            // keep tee-time structure stable
+      loadPlayers();           // refresh player list for that day
+      clearError();
     });
   });
+
+  function clearError() {
+    errorBanner.textContent = '';
+    errorBanner.style.display = 'none';
+  }
+  function showError(msg) {
+    errorBanner.textContent = msg;
+    errorBanner.style.display = 'block';
+  }
 
   function createTeeTimeElement(teeTime) {
     const container = document.createElement('div');
     container.className = 'tee-time';
+    container.dataset.time = teeTime;
 
-    const timeHeader = document.createElement('div');
-    timeHeader.innerHTML = `<strong>${teeTime}</strong>`;
-    timeHeader.style.cursor = 'pointer';
+    const timeHeader = document.createElement('h3');
+    timeHeader.textContent = teeTime;
 
     const buttonsDiv = document.createElement('div');
     buttonsDiv.className = 'player-buttons';
 
- let isExpanded = false;
-timeHeader.addEventListener('click', (e) => {
-  e.stopPropagation();
-  isExpanded = !isExpanded;
-  buttonsDiv.style.display = isExpanded ? 'block' : 'none';
-});
+    // expand/collapse
+    let isExpanded = false;
+    timeHeader.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isExpanded = !isExpanded;
+      buttonsDiv.style.display = isExpanded ? 'block' : 'none';
+    });
 
+    // 4 slots
     for (let i = 0; i < 4; i++) {
-      const btn = document.createElement('button');
-      btn.className = 'add-player-btn';
-      btn.innerHTML = '<span>➕</span> Add Player';
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showDropdown(btn, teeTime, i);
-      });
-      buttonsDiv.appendChild(btn);
+      buttonsDiv.appendChild(newPlayerButton(teeTime, i, container));
     }
+
+    // confirm row
+    const confirmRow = document.createElement('div');
+    confirmRow.className = 'confirm-row';
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'confirm-btn';
+    confirmBtn.textContent = 'Send Confirmation';
+    confirmBtn.addEventListener('click', () => sendConfirmation(teeTime));
+    confirmRow.appendChild(confirmBtn);
 
     container.appendChild(timeHeader);
     container.appendChild(buttonsDiv);
+    container.appendChild(confirmRow);
+
+    // initialize confirm visibility
+    updateConfirmState(teeTime, container);
+
     return container;
   }
 
-  function showDropdown(button, teeTime, slotIndex) {
+  function updateConfirmState(teeTime, container) {
+    const arr = (selectedPlayers[currentDay][teeTime] || []).filter(Boolean);
+    const hasPlayers = arr.length > 0;
+    const row = container.querySelector('.confirm-row');
+    if (row) row.style.display = hasPlayers ? 'block' : 'none';
+  }
+
+  function newPlayerButton(teeTime, slotIndex, container) {
+    const btn = document.createElement('button');
+    btn.className = 'add-player-btn';
+    btn.innerHTML = '<span>➕</span> Add Player';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showDropdown(btn, teeTime, slotIndex, container);
+    });
+    return btn;
+  }
+
+  function usedPlayersSetForDay(day) {
+    const used = new Set();
+    const all = selectedPlayers[day] || {};
+    Object.values(all).flat().forEach(p => {
+      if (p && p.first_name && p.last_name) {
+        used.add(`${p.first_name}::${p.last_name}`);
+      }
+    });
+    return used;
+  }
+
+  function showDropdown(button, teeTime, slotIndex, container) {
     const select = document.createElement('select');
     select.innerHTML = `<option value="">-- Choose Player --</option>`;
+
+    const used = usedPlayersSetForDay(currentDay);
+
     playersData.forEach(p => {
       const option = document.createElement('option');
       option.value = JSON.stringify(p);
-      option.textContent = `${p.last_name}, ${p.first_name} ${p.country}`;
+      option.textContent = `${p.last_name}, ${p.first_name} (${p.country})`;
+      if (used.has(`${p.first_name}::${p.last_name}`)) {
+        option.disabled = true;
+      }
       select.appendChild(option);
     });
 
+    select.addEventListener('click', (e) => e.stopPropagation());
     select.addEventListener('change', () => {
+      if (!select.value) return;
       const selected = JSON.parse(select.value);
+
       selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
+
+      // Prevent double booking across this day
       const alreadyUsed = Object.values(selectedPlayers[currentDay])
         .flat()
-        .some(p => p.first_name === selected.first_name && p.last_name === selected.last_name);
+        .some(p => p && p.first_name === selected.first_name && p.last_name === selected.last_name);
       if (alreadyUsed) {
         alert("Player already assigned a tee time!");
         return;
       }
+
       selectedPlayers[currentDay][teeTime][slotIndex] = selected;
 
       const nameDisplay = document.createElement('div');
-      nameDisplay.textContent = `${selected.first_name} ${selected.last_name} ${selected.country}`;
+      nameDisplay.textContent = `${selected.first_name} ${selected.last_name} (${selected.country})`;
 
       const remove = document.createElement('span');
       remove.className = 'remove-player';
       remove.textContent = '❌';
-      remove.addEventListener('click', () => {
+      remove.title = 'Remove';
+      remove.addEventListener('click', (e) => {
+        e.stopPropagation();
         delete selectedPlayers[currentDay][teeTime][slotIndex];
-        button.replaceWith(newPlayerButton(teeTime, slotIndex));
+        nameDisplay.replaceWith(newPlayerButton(teeTime, slotIndex, container));
+        updateConfirmState(teeTime, container);
       });
 
       nameDisplay.appendChild(remove);
       select.replaceWith(nameDisplay);
+      updateConfirmState(teeTime, container);
     });
 
     button.replaceWith(select);
+    select.focus();
   }
 
-  function newPlayerButton(teeTime, slotIndex) {
-    const btn = document.createElement('button');
-    btn.className = 'add-player-btn';
-    btn.innerHTML = '<span>➕</span> Add Player';
-    btn.addEventListener('click', () => showDropdown(btn, teeTime, slotIndex));
-    return btn;
+  async function sendConfirmation(teeTime) {
+    try {
+      // quick prompts — minimal UI change
+      const name = prompt("Recipient name:");
+      if (name === null) return; // cancel
+      const email = prompt("Recipient email:");
+      if (email === null) return;
+      const phone = prompt("Recipient mobile (optional, e.g. +15551234567):");
+      if (phone === null) return;
+
+      const players = (selectedPlayers[currentDay][teeTime] || []).filter(Boolean);
+      if (players.length === 0) {
+        alert("Please add at least one player for this tee time.");
+        return;
+      }
+
+      const res = await fetch('/send_confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tee_time: `${currentDay} ${teeTime}`,
+          players,
+          email,
+          name,
+          phone
+        })
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data && data.status === 'success') {
+        alert('Confirmation sent!');
+      } else {
+        throw new Error(data && data.error ? data.error : 'Unknown error sending confirmation');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send confirmation. Check server logs.');
+    }
   }
 
-  async function loadPlayers() {
-    const res = await fetch('/load_players', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ day: currentDay })
-    });
-    playersData = await res.json();
-
+  function renderGrid() {
     const teeTimes = ["6:50am", "7:00am", "7:10am", "7:20am", "7:30am", "7:40am", "7:50am", "8:00am", "8:10am", "8:20am"];
     teeTimeGrid.innerHTML = "";
     teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
   }
 
+  async function loadPlayers() {
+    clearError();
+    try {
+      const res = await fetch('/load_players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: currentDay })
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error('Server returned non-JSON response.');
+      }
+
+      if (!res.ok) {
+        const errMsg = data && data.error ? data.error : `HTTP ${res.status}`;
+        throw new Error(errMsg);
+      }
+
+      if (!Array.isArray(data)) {
+        throw new Error(data && data.error ? data.error : 'Unexpected response shape from server.');
+      }
+
+      // sort: last name, then first
+      playersData = data.slice().sort((a, b) => {
+        const ln = a.last_name.localeCompare(b.last_name, undefined, {sensitivity: 'base'});
+        return ln !== 0 ? ln : a.first_name.localeCompare(b.first_name, undefined, {sensitivity: 'base'});
+      });
+
+      // re-render the grid to refresh disabled options etc.
+      renderGrid();
+    } catch (err) {
+      console.error(err);
+      showError(`Could not load players for ${currentDay}. ${err.message || err}`);
+      playersData = [];
+      renderGrid();
+    }
+  }
+
+  // initial paint
+  renderGrid();
   loadPlayers();
 </script>
 </body>
