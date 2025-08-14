@@ -1,295 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Brisa Tee Times</title>
   <style>
-    :root{
-      --brand:#ba0c2f;
-      --ink:#0d0d0d;
-      --card:rgba(255,255,255,0.88);
-      --card-ghost:rgba(255,255,255,0.65);
-      --stroke:rgba(0,0,0,0.15);
-      --shadow:0 10px 30px rgba(0,0,0,0.15);
-      --radius:14px;
-    }
-
-    *{box-sizing:border-box}
-
-    html,body{
-      height:100%;
-      margin:0;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color:var(--ink);
-      background:transparent;
-      overflow-x:hidden;
+    /* Base */
+    * { box-sizing: border-box; }
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background-color: transparent;
+      overflow-x: hidden;
     }
 
     /* Background video */
-    #background-video{
-      position:fixed;
-      top:50%;
-      left:50%;
-      min-width:100%;
-      min-height:100%;
-      width:auto;
-      height:auto;
-      z-index:-1;
-      transform:translate(-50%, -50%);
-      object-fit:cover;
-      filter:saturate(1.05) brightness(0.95);
+    #background-video {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      z-index: -1;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
     }
 
-    /* Page chrome */
-    .wrap{
-      min-height:100dvh;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
+    /* Content shell */
+    .content {
+      position: relative;
+      z-index: 1;
+      padding: 56px 16px 32px;
+      text-align: center;
+      color: white;
     }
 
-    .glass{
-      width:clamp(320px, 92vw, 960px);
-      margin-inline:auto;
-      background:var(--card);
-      backdrop-filter:saturate(1.1) blur(4px);
-      border:1px solid var(--stroke);
-      border-radius:calc(var(--radius) + 2px);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      margin-top:18px;
-      margin-bottom:28px;
-    }
-
-    /* Header */
-    .head{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:14px 18px;
-      border-bottom:1px solid var(--stroke);
-      background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.75));
-    }
-    .logo{
-      width:44px;
-      height:44px;
-      border-radius:10px;
-      object-fit:contain;
-    }
-    .title{
-      display:flex;
-      flex-direction:column;
-      line-height:1.1;
-    }
-    .title b{
-      font-size:18px;
-      letter-spacing:.2px;
-    }
-    .title span{
-      font-size:12px;
-      opacity:.7;
+    .logo {
+      width: 160px;
+      margin: 0 auto 16px;
+      display: block;
     }
 
     /* Tabs */
-    .tabs{
-      display:flex;
-      gap:10px;
-      padding:12px 14px 6px;
-      flex-wrap:wrap;
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 8px 0 16px;
     }
-    .tab{
-      background:#fff;
-      border:1px solid var(--stroke);
-      padding:8px 14px;
-      border-radius:999px;
-      cursor:pointer;
-      font-weight:600;
-      font-size:14px;
-      transition:transform .08s ease, background .2s ease, color .2s ease;
-      user-select:none;
+    .tab {
+      background-color: #f5f5f5cc;
+      padding: 10px 16px;
+      border: 1px solid #000;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      color: #111;
+      user-select: none;
     }
-    .tab:hover{ transform:translateY(-1px) }
-    .tab.active{
-      background:var(--brand);
-      color:#fff;
-      border-color:transparent;
-      box-shadow:0 6px 16px rgba(186,12,47,.25);
+    .tab.active {
+      background-color: #ba0c2f;
+      color: #fff;
+      border-color: #000;
     }
 
-    /* Grid */
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill, minmax(240px,1fr));
-      gap:14px;
-      padding:14px;
+    /* Tee-time container (light gradient, thin black border) */
+    .tee-times-panel {
+      width: 100%;
+      max-width: 480px;        /* keeps it tidy on larger screens */
+      margin: 0 auto;
+      padding: 12px;
+      border: 1px solid rgba(0,0,0,0.7); /* thin black */
+      border-radius: 10px;
+      background: linear-gradient(
+        180deg,
+        rgba(245,245,245,0.18),
+        rgba(245,245,245,0.08)
+      ); /* very light, almost transparent */
+      backdrop-filter: blur(1px);
     }
 
-    .card{
-      background:linear-gradient(180deg, var(--card), var(--card-ghost));
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      transition:transform .08s ease;
-    }
-    .card:hover{ transform:translateY(-2px) }
-
-    .card-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:12px 14px;
-      background:linear-gradient(180deg, rgba(186,12,47,.08), rgba(186,12,47,0));
-      cursor:pointer;
-      user-select:none;
-    }
-    .time{
-      font-weight:800;
-      letter-spacing:.3px;
-    }
-    .chev{ opacity:.5; transition:transform .15s ease }
-    .card.open .chev{ transform:rotate(180deg) }
-
-    .slots{
-      display:none;
-      padding:10px 10px 14px;
-      border-top:1px dashed var(--stroke);
-    }
-    .card.open .slots{ display:block }
-
-    .slot-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      margin:8px 0;
-    }
-    .slot-label{
-      font:600 12px/1 var(--font);
-      opacity:.7;
-      min-width:54px;
+    /* Grid: ALWAYS 2 columns */
+    .tee-time-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(120px, 1fr));
+      gap: 12px;
+      justify-content: center;
+      align-items: start;
     }
 
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:8px 10px;
-      font-size:13px;
-      font-weight:700;
-      background:#fff;
-      border:1px solid var(--stroke);
-      border-radius:10px;
-      cursor:pointer;
-      transition:background .15s ease, transform .08s ease;
+    /* Tee-time pill (light gradient, thin black border) */
+    .tee-time {
+      background: linear-gradient(
+        135deg,
+        rgba(240,240,240,0.25),
+        rgba(220,220,220,0.12)
+      ); /* very light grey */
+      border: 1px solid rgba(0,0,0,0.7); /* thin black */
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 16px;
+      color: #111;
+      cursor: pointer;
+      transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.12s ease;
+      box-shadow: 0 0 0 rgba(0,0,0,0); /* subtle hover effect below */
     }
-    .btn:hover{ background:#f6f6f6 }
-    .btn:active{ transform:translateY(1px) }
-
-    .name-pill{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      background:#fff;
-      border:1px solid var(--stroke);
-      border-radius:999px;
-      padding:8px 12px;
-      font-size:13px;
-      max-width:100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-    .remove{
-      border:none;
-      background:transparent;
-      color:#d92323;
-      font-weight:800;
-      cursor:pointer;
-      padding:2px 6px;
+    .tee-time:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(
+        135deg,
+        rgba(240,240,240,0.32),
+        rgba(220,220,220,0.18)
+      );
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
 
-    select.player-select{
-      width:100%;
-      padding:8px 10px;
-      font-size:13px;
-      border-radius:10px;
-      border:1px solid var(--stroke);
-      background:#fff;
+    /* Time header inside pill */
+    .tee-time .time-header {
+      font-weight: 700;
+      margin-bottom: 8px;
+      user-select: none;
     }
 
-    /* Inline alert */
-    .alert{
-      margin:8px 14px 0;
-      padding:10px 12px;
-      border-left:4px solid var(--brand);
-      background:#fff;
-      border:1px solid var(--stroke);
-      border-radius:10px;
-      font-size:13px;
-      display:none;
+    /* Player controls inside each pill */
+    .player-buttons {
+      margin-top: 6px;
+      display: none; /* toggled on click */
+      text-align: left;
     }
-    .alert.show{ display:block }
 
-    /* Loading skeleton */
-    .skeleton{
-      background:linear-gradient(90deg, #eee, #f6f6f6, #eee);
-      background-size:200% 100%;
-      animation:shimmer 1.2s infinite;
+    .add-player-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 6px 6px 0 0;
+      padding: 6px 10px;
+      font-size: 14px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(0,0,0,0.7);
+      border-radius: 6px;
+      cursor: pointer;
+      color: #111;
     }
-    @keyframes shimmer{
-      0%{background-position:200% 0}
-      100%{background-position:-200% 0}
+
+    .remove-player {
+      color: #ba0c2f;
+      font-size: 13px;
+      margin-left: 8px;
+      cursor: pointer;
     }
+
+    select {
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0.7);
+      background: rgba(255,255,255,0.85);
+      color: #111;
+    }
+
+    /* Toast (optional feedback) */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.82);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease;
+      z-index: 10;
+    }
+    .toast.show { opacity: 1; }
+
   </style>
 </head>
 <body>
-  <!-- Background video -->
   <video autoplay muted loop playsinline id="background-video">
     <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+    Your browser does not support the video tag.
   </video>
 
-  <div class="wrap">
-    <div class="glass">
-      <!-- Header -->
-      <header class="head">
-        <img class="logo" src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo">
-        <div class="title">
-          <b>Brisa Tee Times</b>
-          <span>Select a time, add players</span>
-        </div>
-      </header>
+  <div class="content">
+    <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
 
-      <!-- Tabs -->
-      <nav class="tabs">
-        <button class="tab active" data-day="Saturday">Saturday</button>
-        <button class="tab" data-day="Sunday">Sunday</button>
-      </nav>
+    <div class="tabs">
+      <div class="tab active" data-day="Saturday">Saturday</div>
+      <div class="tab" data-day="Sunday">Sunday</div>
+    </div>
 
-      <!-- Inline alert for errors -->
-      <div id="alert" class="alert"></div>
-
-      <!-- Tee time grid -->
-      <section id="teeTimeGrid" class="grid" aria-live="polite"></section>
+    <div class="tee-times-panel">
+      <div class="tee-time-grid" id="teeTimeGrid"></div>
     </div>
   </div>
+
+  <div class="toast" id="toast"></div>
 
   <script>
     const teeTimeGrid = document.getElementById('teeTimeGrid');
     const tabs = document.querySelectorAll('.tab');
-    const alertEl = document.getElementById('alert');
+    const toast = document.getElementById('toast');
 
     let playersData = [];
     let selectedPlayers = { Saturday: {}, Sunday: {} };
     let currentDay = 'Saturday';
 
-    const TEE_TIMES = [
+    const teeTimes = [
       "6:50am","7:00am","7:10am","7:20am","7:30am",
       "7:40am","7:50am","8:00am","8:10am","8:20am"
     ];
 
-    // Tabs behaviour
+    function showToast(msg, ms = 1600) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), ms);
+    }
+
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
@@ -299,170 +233,107 @@
       });
     });
 
-    // Render helpers
-    function showAlert(msg){
-      alertEl.textContent = msg;
-      alertEl.classList.add('show');
-    }
-    function clearAlert(){
-      alertEl.classList.remove('show');
-      alertEl.textContent = '';
-    }
+    function createTeeTimeElement(teeTime) {
+      const container = document.createElement('div');
+      container.className = 'tee-time';
 
-    function renderSkeleton(){
-      teeTimeGrid.innerHTML = '';
-      for(let i=0;i<6;i++){
-        const sh = document.createElement('div');
-        sh.className = 'card skeleton';
-        sh.style.height = '92px';
-        teeTimeGrid.appendChild(sh);
-      }
-    }
+      const timeHeader = document.createElement('div');
+      timeHeader.className = 'time-header';
+      timeHeader.textContent = teeTime;
 
-    function renderTeeTimes(){
-      teeTimeGrid.innerHTML = '';
-      TEE_TIMES.forEach(t => teeTimeGrid.appendChild(createTimeCard(t)));
-    }
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.className = 'player-buttons';
 
-    function createTimeCard(timeLabel){
-      const card = document.createElement('article');
-      card.className = 'card';
+      let isExpanded = false;
+      timeHeader.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isExpanded = !isExpanded;
+        buttonsDiv.style.display = isExpanded ? 'block' : 'none';
+      });
 
-      const head = document.createElement('div');
-      head.className = 'card-head';
-      head.innerHTML = `
-        <div class="time">${timeLabel}</div>
-        <div class="chev">⌄</div>
-      `;
-      head.addEventListener('click', () => card.classList.toggle('open'));
-
-      const slots = document.createElement('div');
-      slots.className = 'slots';
-
-      for (let i=0; i<4; i++){
-        slots.appendChild(makeSlotRow(timeLabel, i));
+      for (let i = 0; i < 4; i++) {
+        buttonsDiv.appendChild(newPlayerButton(teeTime, i));
       }
 
-      card.appendChild(head);
-      card.appendChild(slots);
-      return card;
+      container.appendChild(timeHeader);
+      container.appendChild(buttonsDiv);
+      return container;
     }
 
-    function makeSlotRow(timeLabel, slotIndex){
-      const row = document.createElement('div');
-      row.className = 'slot-row';
-
-      const lbl = document.createElement('div');
-      lbl.className = 'slot-label';
-      lbl.textContent = `Spot ${slotIndex+1}`;
-
-      const control = document.createElement('div');
-      control.style.flex = '1';
-
-      // initial control = "Add Player" button
-      control.appendChild(newPlayerButton(timeLabel, slotIndex));
-
-      row.appendChild(lbl);
-      row.appendChild(control);
-      return row;
-    }
-
-    function newPlayerButton(timeLabel, slotIndex){
+    function newPlayerButton(teeTime, slotIndex) {
       const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.type = 'button';
-      btn.innerHTML = '➕ Add Player';
+      btn.className = 'add-player-btn';
+      btn.innerHTML = '<span>➕</span> Add Player';
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        showDropdown(btn, timeLabel, slotIndex);
+        showDropdown(btn, teeTime, slotIndex);
       });
       return btn;
     }
 
-    function showDropdown(buttonEl, timeLabel, slotIndex){
+    function showDropdown(button, teeTime, slotIndex) {
       const select = document.createElement('select');
-      select.className = 'player-select';
       select.innerHTML = `<option value="">-- Choose Player --</option>`;
-
       playersData.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = JSON.stringify(p);
-        const country = p.country ? ` ${p.country}` : '';
-        opt.textContent = `${p.last_name}, ${p.first_name}${country}`;
-        select.appendChild(opt);
+        const option = document.createElement('option');
+        option.value = JSON.stringify(p);
+        option.textContent = `${p.last_name}, ${p.first_name} ${p.country}`;
+        select.appendChild(option);
       });
 
-      select.addEventListener('click', (e)=> e.stopPropagation());
       select.addEventListener('change', () => {
-        const val = select.value;
-        if(!val){ return; }
-        const selected = JSON.parse(val);
+        const selected = JSON.parse(select.value);
+        selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
 
-        // Prevent duplicates within the same day
-        selectedPlayers[currentDay][timeLabel] = selectedPlayers[currentDay][timeLabel] || [];
         const alreadyUsed = Object.values(selectedPlayers[currentDay])
           .flat()
           .some(p => p && p.first_name === selected.first_name && p.last_name === selected.last_name);
 
-        if (alreadyUsed){
-          alert("Player already assigned a tee time!");
+        if (alreadyUsed) {
+          showToast("Player already assigned a tee time!");
           return;
         }
 
-        selectedPlayers[currentDay][timeLabel][slotIndex] = selected;
+        selectedPlayers[currentDay][teeTime][slotIndex] = selected;
 
-        const pill = document.createElement('div');
-        const country = selected.country ? ` ${selected.country}` : '';
-        pill.className = 'name-pill';
-        pill.innerHTML = `
-          <span>${selected.first_name} ${selected.last_name}${country}</span>
-          <button type="button" class="remove" aria-label="Remove player">×</button>
-        `;
-        pill.querySelector('.remove').addEventListener('click', () => {
-          delete selectedPlayers[currentDay][timeLabel][slotIndex];
-          pill.replaceWith(newPlayerButton(timeLabel, slotIndex));
+        const nameDisplay = document.createElement('div');
+        nameDisplay.textContent = `${selected.first_name} ${selected.last_name} ${selected.country}`;
+
+        const remove = document.createElement('span');
+        remove.className = 'remove-player';
+        remove.textContent = '❌';
+        remove.addEventListener('click', () => {
+          delete selectedPlayers[currentDay][teeTime][slotIndex];
+          nameDisplay.replaceWith(newPlayerButton(teeTime, slotIndex));
         });
 
-        select.replaceWith(pill);
+        nameDisplay.appendChild(remove);
+        select.replaceWith(nameDisplay);
       });
 
-      buttonEl.replaceWith(select);
-      select.focus();
+      button.replaceWith(select);
     }
 
-    // Data loading
-    async function loadPlayers(){
-      clearAlert();
-      renderSkeleton();
-      let ok = false;
-
-      try{
+    async function loadPlayers() {
+      try {
         const res = await fetch('/load_players', {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json' },
-          body:JSON.stringify({ day: currentDay })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ day: currentDay })
         });
 
-        ok = res.ok;
-        if(!ok){
-          const text = await res.text();
-          console.error('load_players failed', res.status, text);
-          showAlert('Could not load players (using empty list).');
-          playersData = [];
-        }else{
-          playersData = await res.json();
-          // Basic sanity: expect array of {first_name,last_name,country}
-          if(!Array.isArray(playersData)){
-            playersData = [];
-            showAlert('Unexpected data format from server (using empty list).');
-          }
+        if (!res.ok) {
+          showToast('Failed to load players');
+          return;
         }
-      }catch(err){
-        console.error('load_players error:', err);
-        showAlert('Network error while loading players (using empty list).');
-        playersData = [];
-      }finally{
-        renderTeeTimes(); // Always draw the grid so you can continue UI/design work
+
+        playersData = await res.json();
+
+        // Render the 2-column grid of tee-time pills
+        teeTimeGrid.innerHTML = "";
+        teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
+      } catch (err) {
+        showToast('Network error loading players');
       }
     }
 
