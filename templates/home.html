@@ -4,251 +4,470 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Brisa Tee Times</title>
-
-  <!-- Font (optional) -->
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
   <style>
     :root{
       --brand:#ba0c2f;
-      --brand-600:#9c0a27;
-      --panel:#ffffff1a;     /* translucent white */
-      --text:#ffffff;
-      --text-dim:#e8e8e8;
-      --stroke:#00000033;
-      --blur:16px;
+      --ink:#0d0d0d;
+      --card:rgba(255,255,255,0.88);
+      --card-ghost:rgba(255,255,255,0.65);
+      --stroke:rgba(0,0,0,0.15);
+      --shadow:0 10px 30px rgba(0,0,0,0.15);
       --radius:14px;
-      --shadow:0 8px 30px rgba(0,0,0,.25);
-      --focus:0 0 0 3px #ffffff66, 0 0 0 6px var(--brand);
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
+
+    html,body{
+      height:100%;
       margin:0;
-      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--ink);
+      background:transparent;
       overflow-x:hidden;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Background video + scrim */
+    /* Background video */
     #background-video{
-      position:fixed; inset:0;
-      width:100%; height:100%;
-      object-fit:cover; z-index:-2;
-    }
-    .scrim{
-      position:fixed; inset:0; z-index:-1;
-      /* vignette + brand tint for readability */
-      background:
-        radial-gradient(1200px 800px at 70% 10%, rgba(0,0,0,.1), transparent 60%),
-        linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,.65));
+      position:fixed;
+      top:50%;
+      left:50%;
+      min-width:100%;
+      min-height:100%;
+      width:auto;
+      height:auto;
+      z-index:-1;
+      transform:translate(-50%, -50%);
+      object-fit:cover;
+      filter:saturate(1.05) brightness(0.95);
     }
 
-    /* Content wrapper */
-    .content{
+    /* Page chrome */
+    .wrap{
       min-height:100dvh;
       display:flex;
-      align-items:flex-start;
-      justify-content:center;
-      padding:clamp(20px, 4vw, 48px);
-    }
-    .panel{
-      width:min(1200px, 96vw);
-      backdrop-filter: blur(var(--blur));
-      -webkit-backdrop-filter: blur(var(--blur));
-      background:var(--panel);
-      border:1px solid var(--stroke);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:clamp(20px,3vw,32px);
+      flex-direction:column;
+      align-items:center;
     }
 
-    .header{
+    .glass{
+      width:clamp(320px, 92vw, 960px);
+      margin-inline:auto;
+      background:var(--card);
+      backdrop-filter:saturate(1.1) blur(4px);
+      border:1px solid var(--stroke);
+      border-radius:calc(var(--radius) + 2px);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      margin-top:18px;
+      margin-bottom:28px;
+    }
+
+    /* Header */
+    .head{
       display:flex;
       align-items:center;
-      gap:16px;
-      margin-bottom:20px;
+      gap:14px;
+      padding:14px 18px;
+      border-bottom:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.75));
     }
-    .logo{width:140px; height:auto; flex:0 0 auto}
+    .logo{
+      width:44px;
+      height:44px;
+      border-radius:10px;
+      object-fit:contain;
+    }
     .title{
-      font-weight:700; letter-spacing:.2px;
-      font-size:clamp(20px, 2.5vw, 28px);
+      display:flex;
+      flex-direction:column;
+      line-height:1.1;
     }
-    .subtitle{
-      color:var(--text-dim);
-      font-size:clamp(13px,1.6vw,15px);
-      margin-top:4px;
+    .title b{
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    .title span{
+      font-size:12px;
+      opacity:.7;
     }
 
     /* Tabs */
     .tabs{
-      display:flex; flex-wrap:wrap; gap:10px;
-      margin: 8px 0 18px 0;
+      display:flex;
+      gap:10px;
+      padding:12px 14px 6px;
+      flex-wrap:wrap;
     }
     .tab{
-      appearance:none; border:none; cursor:pointer;
-      padding:10px 16px; font-weight:600;
+      background:#fff;
+      border:1px solid var(--stroke);
+      padding:8px 14px;
       border-radius:999px;
-      color:#1f1f1f;
-      background:#f5f5f5cc;
-      border:1px solid #00000026;
-      transition: transform .08s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px;
+      transition:transform .08s ease, background .2s ease, color .2s ease;
+      user-select:none;
     }
-    .tab:hover{ transform: translateY(-1px); }
-    .tab:focus-visible{ outline:none; box-shadow: var(--focus); }
+    .tab:hover{ transform:translateY(-1px) }
     .tab.active{
       background:var(--brand);
-      color:#fff; border-color:#00000040;
-      box-shadow:0 6px 14px rgba(186,12,47,.35);
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 6px 16px rgba(186,12,47,.25);
     }
 
     /* Grid */
-    .tee-time-grid{
+    .grid{
       display:grid;
-      grid-template-columns: repeat(2, minmax(180px, 1fr));
-      gap:16px;
-    }
-    @media (min-width: 720px){
-      .tee-time-grid{
-        grid-template-columns: repeat(3, minmax(200px, 1fr));
-      }
-    }
-    @media (min-width: 1000px){
-      .tee-time-grid{
-        grid-template-columns: repeat(4, minmax(200px, 1fr));
-      }
+      grid-template-columns:repeat(auto-fill, minmax(240px,1fr));
+      gap:14px;
+      padding:14px;
     }
 
-    /* Tee time card */
-    .tee-time{
-      border-radius:12px;
+    .card{
+      background:linear-gradient(180deg, var(--card), var(--card-ghost));
       border:1px solid var(--stroke);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
-      padding:14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.18);
-      transition: transform .08s ease, box-shadow .2s ease, border-color .2s ease;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      transition:transform .08s ease;
+    }
+    .card:hover{ transform:translateY(-2px) }
+
+    .card-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 14px;
+      background:linear-gradient(180deg, rgba(186,12,47,.08), rgba(186,12,47,0));
+      cursor:pointer;
       user-select:none;
     }
-    .tee-time:hover{
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(0,0,0,.28);
-      border-color:#00000044;
+    .time{
+      font-weight:800;
+      letter-spacing:.3px;
     }
-    .tee-time strong{
-      font-size:18px; letter-spacing:.2px;
+    .chev{ opacity:.5; transition:transform .15s ease }
+    .card.open .chev{ transform:rotate(180deg) }
+
+    .slots{
+      display:none;
+      padding:10px 10px 14px;
+      border-top:1px dashed var(--stroke);
+    }
+    .card.open .slots{ display:block }
+
+    .slot-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin:8px 0;
+    }
+    .slot-label{
+      font:600 12px/1 var(--font);
+      opacity:.7;
+      min-width:54px;
     }
 
-    /* Player button area */
-    .player-buttons{ margin-top:12px; display:none; }
-    .add-player-btn{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:8px 10px; margin:6px 6px 0 0;
-      font-size:14px; font-weight:600;
-      background:#ffffffe6; color:#1a1a1a;
-      border:1px solid #00000030; border-radius:10px;
-      cursor:pointer; transition: transform .06s ease, box-shadow .15s ease, background .2s ease;
-    }
-    .add-player-btn:hover{ transform: translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.22); }
-    .add-player-btn:focus-visible{ outline:none; box-shadow: var(--focus); }
-
-    /* Selected player pill */
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; margin:6px 6px 0 0;
-      background: #ffffffe6; color:#111;
-      border:1px solid #00000030; border-radius:999px;
-      font-size:14px; font-weight:600;
-    }
-    .remove-player{
-      display:inline-block; line-height:1;
-      color:#b00020; cursor:pointer; font-size:14px;
-      margin-left:2px; user-select:none;
-    }
-
-    /* Select styling (native select for simplicity) */
-    select{
-      width:100%;
-      padding:10px 12px; margin-top:6px;
-      border-radius:10px; border:1px solid #00000030;
-      background:#ffffff; color:#111; font-weight:600;
-      appearance:auto;
-    }
-    select:focus-visible{ outline:none; box-shadow: var(--focus); }
-
-    /* Actions row (send confirmation) */
-    .actions-row{
-      display:flex; gap:10px; align-items:center; justify-content:flex-end;
-      margin-top:20px;
-    }
     .btn{
-      appearance:none; border:none; cursor:pointer; user-select:none;
-      padding:10px 16px; border-radius:10px; font-weight:700;
-      transition: transform .06s ease, box-shadow .15s ease, background .2s ease;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 10px;
+      font-size:13px;
+      font-weight:700;
+      background:#fff;
+      border:1px solid var(--stroke);
+      border-radius:10px;
+      cursor:pointer;
+      transition:background .15s ease, transform .08s ease;
     }
-    .btn:focus-visible{ outline:none; box-shadow: var(--focus); }
-    .btn-primary{
-      background:linear-gradient(180deg, var(--brand), var(--brand-600));
-      color:#fff; box-shadow:0 8px 20px rgba(186,12,47,.35);
+    .btn:hover{ background:#f6f6f6 }
+    .btn:active{ transform:translateY(1px) }
+
+    .name-pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:#fff;
+      border:1px solid var(--stroke);
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
-    .btn-primary:hover{ transform: translateY(-1px); }
-    .btn-ghost{
-      background:transparent; color:#fff; border:1px solid #ffffff66;
+    .remove{
+      border:none;
+      background:transparent;
+      color:#d92323;
+      font-weight:800;
+      cursor:pointer;
+      padding:2px 6px;
     }
 
-    /* Toast (already in your JS; keep styling consistent) */
-    .toast{
-      position: fixed; right:16px; bottom:16px; z-index:10;
-      background:#121212; color:#fff;
-      border:1px solid #ffffff22; border-radius:12px;
-      padding:12px 14px; box-shadow:0 8px 20px rgba(0,0,0,.35);
-      opacity:0; transform: translateY(8px);
-      animation: toast-in .25s ease forwards;
+    select.player-select{
+      width:100%;
+      padding:8px 10px;
+      font-size:13px;
+      border-radius:10px;
+      border:1px solid var(--stroke);
+      background:#fff;
     }
-    @keyframes toast-in{
-      to{ opacity:1; transform: translateY(0); }
+
+    /* Inline alert */
+    .alert{
+      margin:8px 14px 0;
+      padding:10px 12px;
+      border-left:4px solid var(--brand);
+      background:#fff;
+      border:1px solid var(--stroke);
+      border-radius:10px;
+      font-size:13px;
+      display:none;
+    }
+    .alert.show{ display:block }
+
+    /* Loading skeleton */
+    .skeleton{
+      background:linear-gradient(90deg, #eee, #f6f6f6, #eee);
+      background-size:200% 100%;
+      animation:shimmer 1.2s infinite;
+    }
+    @keyframes shimmer{
+      0%{background-position:200% 0}
+      100%{background-position:-200% 0}
     }
   </style>
 </head>
 <body>
+  <!-- Background video -->
   <video autoplay muted loop playsinline id="background-video">
     <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
   </video>
-  <div class="scrim"></div>
 
-  <div class="content">
-    <div class="panel">
-      <div class="header">
-        <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
-        <div>
-          <div class="title">Brisa Tee Times</div>
-          <div class="subtitle">Select a time, add players, and send a confirmation.</div>
+  <div class="wrap">
+    <div class="glass">
+      <!-- Header -->
+      <header class="head">
+        <img class="logo" src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo">
+        <div class="title">
+          <b>Brisa Tee Times</b>
+          <span>Select a time, add players</span>
         </div>
-      </div>
+      </header>
 
-      <div class="tabs">
+      <!-- Tabs -->
+      <nav class="tabs">
         <button class="tab active" data-day="Saturday">Saturday</button>
         <button class="tab" data-day="Sunday">Sunday</button>
-      </div>
+      </nav>
 
-      <div class="tee-time-grid" id="teeTimeGrid"></div>
+      <!-- Inline alert for errors -->
+      <div id="alert" class="alert"></div>
 
-      <!-- Optional actions row if your current JS shows a Send button -->
-      <div class="actions-row" id="actionsRow" style="display:none;">
-        <button class="btn btn-ghost" id="clearBtn" type="button">Clear</button>
-        <button class="btn btn-primary" id="sendBtn" type="button">Send Confirmation</button>
-      </div>
+      <!-- Tee time grid -->
+      <section id="teeTimeGrid" class="grid" aria-live="polite"></section>
     </div>
   </div>
 
-  <!-- Your existing JS can remain exactly the same -->
   <script>
-    // Keep your current script block here unchanged.
-    // If you used IDs: teeTimeGrid, actionsRow, sendBtn, etc., they still exist.
+    const teeTimeGrid = document.getElementById('teeTimeGrid');
+    const tabs = document.querySelectorAll('.tab');
+    const alertEl = document.getElementById('alert');
+
+    let playersData = [];
+    let selectedPlayers = { Saturday: {}, Sunday: {} };
+    let currentDay = 'Saturday';
+
+    const TEE_TIMES = [
+      "6:50am","7:00am","7:10am","7:20am","7:30am",
+      "7:40am","7:50am","8:00am","8:10am","8:20am"
+    ];
+
+    // Tabs behaviour
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentDay = tab.dataset.day;
+        loadPlayers();
+      });
+    });
+
+    // Render helpers
+    function showAlert(msg){
+      alertEl.textContent = msg;
+      alertEl.classList.add('show');
+    }
+    function clearAlert(){
+      alertEl.classList.remove('show');
+      alertEl.textContent = '';
+    }
+
+    function renderSkeleton(){
+      teeTimeGrid.innerHTML = '';
+      for(let i=0;i<6;i++){
+        const sh = document.createElement('div');
+        sh.className = 'card skeleton';
+        sh.style.height = '92px';
+        teeTimeGrid.appendChild(sh);
+      }
+    }
+
+    function renderTeeTimes(){
+      teeTimeGrid.innerHTML = '';
+      TEE_TIMES.forEach(t => teeTimeGrid.appendChild(createTimeCard(t)));
+    }
+
+    function createTimeCard(timeLabel){
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      const head = document.createElement('div');
+      head.className = 'card-head';
+      head.innerHTML = `
+        <div class="time">${timeLabel}</div>
+        <div class="chev">⌄</div>
+      `;
+      head.addEventListener('click', () => card.classList.toggle('open'));
+
+      const slots = document.createElement('div');
+      slots.className = 'slots';
+
+      for (let i=0; i<4; i++){
+        slots.appendChild(makeSlotRow(timeLabel, i));
+      }
+
+      card.appendChild(head);
+      card.appendChild(slots);
+      return card;
+    }
+
+    function makeSlotRow(timeLabel, slotIndex){
+      const row = document.createElement('div');
+      row.className = 'slot-row';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'slot-label';
+      lbl.textContent = `Spot ${slotIndex+1}`;
+
+      const control = document.createElement('div');
+      control.style.flex = '1';
+
+      // initial control = "Add Player" button
+      control.appendChild(newPlayerButton(timeLabel, slotIndex));
+
+      row.appendChild(lbl);
+      row.appendChild(control);
+      return row;
+    }
+
+    function newPlayerButton(timeLabel, slotIndex){
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.type = 'button';
+      btn.innerHTML = '➕ Add Player';
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showDropdown(btn, timeLabel, slotIndex);
+      });
+      return btn;
+    }
+
+    function showDropdown(buttonEl, timeLabel, slotIndex){
+      const select = document.createElement('select');
+      select.className = 'player-select';
+      select.innerHTML = `<option value="">-- Choose Player --</option>`;
+
+      playersData.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify(p);
+        const country = p.country ? ` ${p.country}` : '';
+        opt.textContent = `${p.last_name}, ${p.first_name}${country}`;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener('click', (e)=> e.stopPropagation());
+      select.addEventListener('change', () => {
+        const val = select.value;
+        if(!val){ return; }
+        const selected = JSON.parse(val);
+
+        // Prevent duplicates within the same day
+        selectedPlayers[currentDay][timeLabel] = selectedPlayers[currentDay][timeLabel] || [];
+        const alreadyUsed = Object.values(selectedPlayers[currentDay])
+          .flat()
+          .some(p => p && p.first_name === selected.first_name && p.last_name === selected.last_name);
+
+        if (alreadyUsed){
+          alert("Player already assigned a tee time!");
+          return;
+        }
+
+        selectedPlayers[currentDay][timeLabel][slotIndex] = selected;
+
+        const pill = document.createElement('div');
+        const country = selected.country ? ` ${selected.country}` : '';
+        pill.className = 'name-pill';
+        pill.innerHTML = `
+          <span>${selected.first_name} ${selected.last_name}${country}</span>
+          <button type="button" class="remove" aria-label="Remove player">×</button>
+        `;
+        pill.querySelector('.remove').addEventListener('click', () => {
+          delete selectedPlayers[currentDay][timeLabel][slotIndex];
+          pill.replaceWith(newPlayerButton(timeLabel, slotIndex));
+        });
+
+        select.replaceWith(pill);
+      });
+
+      buttonEl.replaceWith(select);
+      select.focus();
+    }
+
+    // Data loading
+    async function loadPlayers(){
+      clearAlert();
+      renderSkeleton();
+      let ok = false;
+
+      try{
+        const res = await fetch('/load_players', {
+          method:'POST',
+          headers:{ 'Content-Type':'application/json' },
+          body:JSON.stringify({ day: currentDay })
+        });
+
+        ok = res.ok;
+        if(!ok){
+          const text = await res.text();
+          console.error('load_players failed', res.status, text);
+          showAlert('Could not load players (using empty list).');
+          playersData = [];
+        }else{
+          playersData = await res.json();
+          // Basic sanity: expect array of {first_name,last_name,country}
+          if(!Array.isArray(playersData)){
+            playersData = [];
+            showAlert('Unexpected data format from server (using empty list).');
+          }
+        }
+      }catch(err){
+        console.error('load_players error:', err);
+        showAlert('Network error while loading players (using empty list).');
+        playersData = [];
+      }finally{
+        renderTeeTimes(); // Always draw the grid so you can continue UI/design work
+      }
+    }
+
+    // Initial load
+    loadPlayers();
   </script>
 </body>
 </html>
