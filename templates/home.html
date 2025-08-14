@@ -5,340 +5,304 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Brisa Tee Times</title>
   <style>
-    /* Base */
-    * { box-sizing: border-box; }
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background-color: transparent;
+    :root{
+      --thin-border: 1px solid #000;
+      --pill-grad: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02));
+      --tee-grad: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02));
+    }
+
+    /* page + video bg */
+    html, body { height: 100%; margin:0; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: #111;
+      background: transparent;
       overflow-x: hidden;
     }
-
-    /* Background video */
     #background-video {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      min-width: 100%;
-      min-height: 100%;
-      width: auto;
-      height: auto;
-      z-index: -1;
+      position: fixed; top: 50%; left: 50%;
+      min-width: 100%; min-height: 100%;
+      width: auto; height: auto;
       transform: translate(-50%, -50%);
-      object-fit: cover;
+      object-fit: cover; z-index: -1;
     }
 
-    /* Content shell */
-    .content {
-      position: relative;
-      z-index: 1;
-      padding: 56px 16px 32px;
-      text-align: center;
-      color: white;
-    }
+    .content { position: relative; z-index: 1; padding: 72px 16px 40px; }
 
     .logo {
-      width: 160px;
-      margin: 0 auto 16px;
-      display: block;
+      width: 160px; display:block; margin: 0 auto 16px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
     }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 8px 0 16px;
+    /* sticky pill tabs */
+    .tabs-wrap{
+      position: sticky; top: 8px; z-index: 10;
+      display:flex; justify-content:center;
+      padding: 8px 0;
     }
-    .tab {
-      background-color: #f5f5f5cc;
-      padding: 10px 16px;
-      border: 1px solid #000;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      color: #111;
-      user-select: none;
+    .pill-group{
+      display:inline-flex; gap:8px; align-items:center;
+      background: rgba(255,255,255,.55);
+      border: var(--thin-border);
+      border-radius: 9999px;
+      padding: 6px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
     }
-    .tab.active {
-      background-color: #ba0c2f;
-      color: #fff;
-      border-color: #000;
+    .pill{
+      appearance:none; border: var(--thin-border);
+      background: var(--pill-grad);
+      padding: 8px 16px;
+      border-radius:9999px; font-weight: 600;
+      cursor:pointer; transition: transform .08s ease, background .2s ease;
+    }
+    .pill:hover{ transform: translateY(-1px); }
+    .pill.active{
+      background:#000; color:#fff;
     }
 
-    /* Tee-time container (light gradient, thin black border) */
-    .tee-times-panel {
-      width: 100%;
-      max-width: 480px;        /* keeps it tidy on larger screens */
-      margin: 0 auto;
+    /* tee-time grid (2 columns mobile-first) */
+    .tee-time-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(140px, 1fr));
+      gap: 16px;
+      max-width: 520px;
+      margin: 12px auto 0;
+    }
+    @media (min-width: 560px){
+      .tee-time-grid{ grid-template-columns: repeat(2, minmax(180px, 1fr)); max-width: 640px; }
+    }
+
+    /* tee-time pill */
+    .tee-time{
+      background: var(--tee-grad);
+      border: var(--thin-border);
+      border-radius: 12px;
       padding: 12px;
-      border: 1px solid rgba(0,0,0,0.7); /* thin black */
-      border-radius: 10px;
-      background: linear-gradient(
-        180deg,
-        rgba(245,245,245,0.18),
-        rgba(245,245,245,0.08)
-      ); /* very light, almost transparent */
-      backdrop-filter: blur(1px);
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
     }
-
-    /* Grid: ALWAYS 2 columns */
-    .tee-time-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(120px, 1fr));
-      gap: 12px;
-      justify-content: center;
-      align-items: start;
-    }
-
-    /* Tee-time pill (light gradient, thin black border) */
-    .tee-time {
-      background: linear-gradient(
-        135deg,
-        rgba(240,240,240,0.25),
-        rgba(220,220,220,0.12)
-      ); /* very light grey */
-      border: 1px solid rgba(0,0,0,0.7); /* thin black */
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 16px;
-      color: #111;
+    .tee-time .time-header{
+      font-weight: 700; font-size: 18px;
       cursor: pointer;
-      transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.12s ease;
-      box-shadow: 0 0 0 rgba(0,0,0,0); /* subtle hover effect below */
+      display:flex; align-items:center; justify-content:space-between;
     }
-    .tee-time:hover {
-      transform: translateY(-1px);
-      background: linear-gradient(
-        135deg,
-        rgba(240,240,240,0.32),
-        rgba(220,220,220,0.18)
-      );
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    .tee-time .time-header .chev{
+      font-size: 16px; opacity:.7; transition: transform .15s ease;
+    }
+    .tee-time.expanded .time-header .chev{ transform: rotate(90deg); }
+
+    .player-buttons{ margin-top:10px; display:none; }
+    .tee-time.expanded .player-buttons{ display:block; }
+
+    .add-player-btn{
+      display:inline-flex; align-items:center; gap:6px;
+      margin: 6px 6px 0 0; padding: 6px 10px;
+      font-size:14px; background:#fff;
+      border: var(--thin-border); border-radius: 8px;
+      cursor:pointer; transition: transform .08s ease, box-shadow .15s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .add-player-btn:hover{ transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.12); }
+
+    select{
+      margin-top: 6px; padding: 6px 8px; font-size:14px;
+      border: var(--thin-border); border-radius: 8px; background:#fff;
     }
 
-    /* Time header inside pill */
-    .tee-time .time-header {
-      font-weight: 700;
-      margin-bottom: 8px;
-      user-select: none;
+    /* selected player chip */
+    .player-chip{
+      display:inline-flex; align-items:center; gap:8px;
+      margin-top: 8px; padding: 8px 10px;
+      background:#fff; border: var(--thin-border); border-radius: 10px;
+      font-size: 14px;
     }
 
-    /* Player controls inside each pill */
-    .player-buttons {
-      margin-top: 6px;
-      display: none; /* toggled on click */
-      text-align: left;
-    }
-
-    .add-player-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin: 6px 6px 0 0;
+    /* clear "remove" action button */
+    .remove-btn{
+      display:inline-flex; align-items:center; gap:6px;
       padding: 6px 10px;
-      font-size: 14px;
-      background: rgba(255,255,255,0.75);
-      border: 1px solid rgba(0,0,0,0.7);
-      border-radius: 6px;
-      cursor: pointer;
-      color: #111;
+      background:#fff;
+      border: var(--thin-border); border-radius: 8px;
+      cursor:pointer; font-size:13px; font-weight:600;
+      transition: transform .08s ease, box-shadow .15s ease, background .15s ease;
     }
-
-    .remove-player {
-      color: #ba0c2f;
-      font-size: 13px;
-      margin-left: 8px;
-      cursor: pointer;
-    }
-
-    select {
-      margin-top: 6px;
-      padding: 6px 8px;
-      border-radius: 6px;
-      border: 1px solid rgba(0,0,0,0.7);
-      background: rgba(255,255,255,0.85);
-      color: #111;
-    }
-
-    /* Toast (optional feedback) */
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.82);
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 14px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-      z-index: 10;
-    }
-    .toast.show { opacity: 1; }
+    .remove-btn:hover{ background:#f3f3f3; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.12); }
+    .remove-btn svg{ width:14px; height:14px; }
 
   </style>
 </head>
 <body>
-  <video autoplay muted loop playsinline id="background-video">
-    <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+<video autoplay muted loop playsinline id="background-video">
+  <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+</video>
 
-  <div class="content">
-    <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
+<div class="content">
+  <img src="{{ url_for('static', filename='uswamlogo.png') }}" alt="Logo" class="logo" />
 
-    <div class="tabs">
-      <div class="tab active" data-day="Saturday">Saturday</div>
-      <div class="tab" data-day="Sunday">Sunday</div>
-    </div>
-
-    <div class="tee-times-panel">
-      <div class="tee-time-grid" id="teeTimeGrid"></div>
+  <!-- Sticky pill tabs -->
+  <div class="tabs-wrap">
+    <div class="pill-group" role="tablist" aria-label="Choose day">
+      <button class="pill active" data-day="Saturday" role="tab" aria-selected="true">Saturday</button>
+      <button class="pill" data-day="Sunday" role="tab" aria-selected="false">Sunday</button>
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="tee-time-grid" id="teeTimeGrid"></div>
+</div>
 
-  <script>
-    const teeTimeGrid = document.getElementById('teeTimeGrid');
-    const tabs = document.querySelectorAll('.tab');
-    const toast = document.getElementById('toast');
+<script>
+  const teeTimeGrid = document.getElementById('teeTimeGrid');
+  const tabs = document.querySelectorAll('.pill-group .pill');
+  let playersData = [];
+  let selectedPlayers = { Saturday: {}, Sunday: {} };
+  let currentDay = 'Saturday';
 
-    let playersData = [];
-    let selectedPlayers = { Saturday: {}, Sunday: {} };
-    let currentDay = 'Saturday';
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected','true');
+      currentDay = tab.dataset.day;
+      loadPlayers();
+    });
+  });
 
-    const teeTimes = [
-      "6:50am","7:00am","7:10am","7:20am","7:30am",
-      "7:40am","7:50am","8:00am","8:10am","8:20am"
-    ];
-
-    function showToast(msg, ms = 1600) {
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), ms);
+  // Generate 10-minute tee times from 6:50am to 2:10pm inclusive
+  function generateTeeTimes() {
+    const startMinutes = 6*60 + 50;  // 6:50
+    const endMinutes   = 14*60 + 10; // 2:10 pm (14:10)
+    const out = [];
+    for (let m = startMinutes; m <= endMinutes; m += 10) {
+      let h = Math.floor(m/60);
+      let min = m % 60;
+      const ampm = h >= 12 ? 'pm' : 'am';
+      let displayHour = h % 12;
+      if (displayHour === 0) displayHour = 12;
+      const displayMin = min.toString().padStart(2,'0');
+      out.push(`${displayHour}:${displayMin}${ampm}`);
     }
+    return out;
+  }
 
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        currentDay = tab.dataset.day;
-        loadPlayers();
-      });
+  function createTeeTimeElement(teeTime) {
+    const container = document.createElement('div');
+    container.className = 'tee-time';
+
+    const timeHeader = document.createElement('div');
+    timeHeader.className = 'time-header';
+    timeHeader.innerHTML = `<span>${teeTime}</span><span class="chev">›</span>`;
+    timeHeader.addEventListener('click', () => {
+      container.classList.toggle('expanded');
     });
 
-    function createTeeTimeElement(teeTime) {
-      const container = document.createElement('div');
-      container.className = 'tee-time';
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.className = 'player-buttons';
 
-      const timeHeader = document.createElement('div');
-      timeHeader.className = 'time-header';
-      timeHeader.textContent = teeTime;
-
-      const buttonsDiv = document.createElement('div');
-      buttonsDiv.className = 'player-buttons';
-
-      let isExpanded = false;
-      timeHeader.addEventListener('click', (e) => {
-        e.stopPropagation();
-        isExpanded = !isExpanded;
-        buttonsDiv.style.display = isExpanded ? 'block' : 'none';
-      });
-
-      for (let i = 0; i < 4; i++) {
-        buttonsDiv.appendChild(newPlayerButton(teeTime, i));
-      }
-
-      container.appendChild(timeHeader);
-      container.appendChild(buttonsDiv);
-      return container;
-    }
-
-    function newPlayerButton(teeTime, slotIndex) {
+    for (let i = 0; i < 4; i++) {
       const btn = document.createElement('button');
       btn.className = 'add-player-btn';
       btn.innerHTML = '<span>➕</span> Add Player';
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        showDropdown(btn, teeTime, slotIndex);
+        showDropdown(btn, teeTime, i);
       });
-      return btn;
+      buttonsDiv.appendChild(btn);
     }
 
-    function showDropdown(button, teeTime, slotIndex) {
-      const select = document.createElement('select');
-      select.innerHTML = `<option value="">-- Choose Player --</option>`;
-      playersData.forEach(p => {
-        const option = document.createElement('option');
-        option.value = JSON.stringify(p);
-        option.textContent = `${p.last_name}, ${p.first_name} ${p.country}`;
-        select.appendChild(option);
-      });
+    container.appendChild(timeHeader);
+    container.appendChild(buttonsDiv);
+    return container;
+  }
 
-      select.addEventListener('change', () => {
-        const selected = JSON.parse(select.value);
-        selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
+  function showDropdown(button, teeTime, slotIndex) {
+    const select = document.createElement('select');
+    select.innerHTML = `<option value="">-- Choose Player --</option>`;
+    playersData.forEach(p => {
+      const option = document.createElement('option');
+      option.value = JSON.stringify(p);
+      option.textContent = `${p.last_name}, ${p.first_name} ${p.country}`;
+      select.appendChild(option);
+    });
 
-        const alreadyUsed = Object.values(selectedPlayers[currentDay])
-          .flat()
-          .some(p => p && p.first_name === selected.first_name && p.last_name === selected.last_name);
+    select.addEventListener('click', (e) => e.stopPropagation());
 
-        if (alreadyUsed) {
-          showToast("Player already assigned a tee time!");
-          return;
-        }
+    select.addEventListener('change', () => {
+      const selected = JSON.parse(select.value || '{}');
+      if (!selected.first_name || !selected.last_name) return;
 
-        selectedPlayers[currentDay][teeTime][slotIndex] = selected;
+      selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
 
-        const nameDisplay = document.createElement('div');
-        nameDisplay.textContent = `${selected.first_name} ${selected.last_name} ${selected.country}`;
-
-        const remove = document.createElement('span');
-        remove.className = 'remove-player';
-        remove.textContent = '❌';
-        remove.addEventListener('click', () => {
-          delete selectedPlayers[currentDay][teeTime][slotIndex];
-          nameDisplay.replaceWith(newPlayerButton(teeTime, slotIndex));
-        });
-
-        nameDisplay.appendChild(remove);
-        select.replaceWith(nameDisplay);
-      });
-
-      button.replaceWith(select);
-    }
-
-    async function loadPlayers() {
-      try {
-        const res = await fetch('/load_players', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ day: currentDay })
-        });
-
-        if (!res.ok) {
-          showToast('Failed to load players');
-          return;
-        }
-
-        playersData = await res.json();
-
-        // Render the 2-column grid of tee-time pills
-        teeTimeGrid.innerHTML = "";
-        teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
-      } catch (err) {
-        showToast('Network error loading players');
+      const alreadyUsed = Object.values(selectedPlayers[currentDay])
+        .flat()
+        .some(p => p && p.first_name === selected.first_name && p.last_name === selected.last_name);
+      if (alreadyUsed) {
+        alert("Player already assigned a tee time!");
+        return;
       }
-    }
+      selectedPlayers[currentDay][teeTime][slotIndex] = selected;
 
-    // Initial load
-    loadPlayers();
-  </script>
+      const chip = document.createElement('div');
+      chip.className = 'player-chip';
+      chip.textContent = `${selected.first_name} ${selected.last_name} ${selected.country}`;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.setAttribute('title', 'Remove player');
+      removeBtn.setAttribute('aria-label', 'Remove player');
+
+      // inline SVG "minus in circle"
+      removeBtn.innerHTML = `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="10" fill="none" stroke="#000" stroke-width="2"/>
+          <line x1="7" y1="12" x2="17" y2="12" stroke="#000" stroke-width="2" />
+        </svg>
+        <span>Remove</span>
+      `;
+
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        delete selectedPlayers[currentDay][teeTime][slotIndex];
+        chip.replaceWith(newPlayerButton(teeTime, slotIndex));
+      });
+
+      chip.appendChild(removeBtn);
+      select.replaceWith(chip);
+    });
+
+    button.replaceWith(select);
+  }
+
+  function newPlayerButton(teeTime, slotIndex) {
+    const btn = document.createElement('button');
+    btn.className = 'add-player-btn';
+    btn.innerHTML = '<span>➕</span> Add Player';
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showDropdown(btn, teeTime, slotIndex);
+    });
+    return btn;
+  }
+
+  async function loadPlayers() {
+    try {
+      const res = await fetch('/load_players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: currentDay })
+      });
+      if (!res.ok) throw new Error('Failed to load players');
+      playersData = await res.json();
+
+      const teeTimes = generateTeeTimes(); // 6:50am → 2:10pm every 10 min
+      teeTimeGrid.innerHTML = "";
+      teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
+    } catch (e) {
+      console.error(e);
+      teeTimeGrid.innerHTML = "<p style='text-align:center;color:#111;background:rgba(255,255,255,.7);border:1px solid #000;border-radius:8px;padding:12px;'>Unable to load players.</p>";
+    }
+  }
+
+  loadPlayers();
+</script>
 </body>
 </html>
