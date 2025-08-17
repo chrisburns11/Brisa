@@ -387,39 +387,50 @@ opt.textContent = formatLabel(clean.first_name, clean.last_name, clean.country);
 
   // Remove handler -> /reserve/cancel
   removeBtn.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    const player = selectedPlayers[currentDay][teeTime]?.[slotIndex];
-    if (!player) return;
-    if (!confirm(`Remove ${player.first_name} ${player.last_name} from ${teeTime}?`)) return;
+  e.stopPropagation();
+  const player = selectedPlayers[currentDay][teeTime]?.[slotIndex];
+  if (!player) return;
 
-    try {
-      const res = await fetch('/reserve/cancel', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({
-          day: currentDay,
-          tee_time: teeTime,
-          first_name: player.first_name,
-          last_name: player.last_name,
-          slot: slotIndex
-        })
-      });
-      const data = await res.json().catch(()=> ({}));
-      if (!res.ok) { alert(data.error || 'Failed to cancel'); return; }
+  if (!confirm(`Remove ${player.first_name} ${player.last_name} from ${teeTime}?`)) return;
 
-      // flip UI back to "empty"
-      if (selectedPlayers[currentDay][teeTime]) {
-        selectedPlayers[currentDay][teeTime][slotIndex] = null;
-      }
-      select.dataset.locked = '';
-      select.disabled = false;
-      select.value = '';
-      select.style.display = '';      // show select
-      chip.style.display = 'none';    // hide chip
-    } catch {
-      alert('Failed to cancel');
+  // Ask for email so we can send a cancellation confirmation
+  const emailInput = prompt("Enter your email to receive a cancellation confirmation:");
+  if (emailInput === null) return; // user hit cancel
+  const email = (emailInput || "").trim();
+  if (!email) {
+    alert("Email is required to receive a cancellation confirmation.");
+    return;
+  }
+
+  try {
+    const res = await fetch('/reserve/cancel', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        day: currentDay,
+        tee_time: teeTime,
+        first_name: player.first_name,
+        last_name: player.last_name,
+        slot: slotIndex,
+        email // <- pass the email to the server
+      })
+    });
+    const data = await res.json().catch(()=> ({}));
+    if (!res.ok) { alert(data.error || 'Failed to cancel'); return; }
+
+    // flip UI back to "empty"
+    if (selectedPlayers[currentDay][teeTime]) {
+      selectedPlayers[currentDay][teeTime][slotIndex] = null;
     }
-  });
+    select.dataset.locked = '';
+    select.disabled = false;
+    select.value = '';
+    select.style.display = '';      // show select again
+    chip.style.display = 'none';    // hide chip
+  } catch {
+    alert('Failed to cancel');
+  }
+});
 
   // When a player is chosen -> open modal
   select.addEventListener('change', () => {

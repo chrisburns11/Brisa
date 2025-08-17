@@ -228,7 +228,6 @@ def reserve():
         print(f"/reserve error: {e}")
         return jsonify({"error": "Failed to reserve"}), 500
 
-
 @app.route("/reserve/cancel", methods=["POST"])
 def reserve_cancel():
     try:
@@ -238,6 +237,11 @@ def reserve_cancel():
         first_name = (data.get("first_name") or "").strip()
         last_name  = (data.get("last_name") or "").strip()
         slot       = data.get("slot")
+        # The email the user typed during removal (optional override)
+        email_override = (data.get("email") or "").strip()
+        if not email_override:
+            return jsonify({"error": "Please enter your email to cancel and receive confirmation."}), 400
+
         try:
             slot = int(slot) if slot is not None else None
         except Exception:
@@ -258,6 +262,7 @@ def reserve_cancel():
         header = rows[0]
         col = {name: i for i, name in enumerate(header)}
         target_row_index = None  # 1-based
+        reservation_email = None
 
         for idx, r in enumerate(rows[1:], start=2):
             if len(r) < len(header):
@@ -270,16 +275,33 @@ def reserve_cancel():
                 (slot is None or str(r[col.get("slot", 8)] or "").strip() == str(slot))
             ):
                 target_row_index = idx
+                reservation_email = (r[col.get("email", 6)] or "").strip()
                 break
 
         if not target_row_index:
             return jsonify({"error": "Reservation not found"}), 404
 
+        # Delete the row for this reservation
         ws.delete_rows(target_row_index)
+
+        # Send cancellation email (best-effort).
+        try:
+            email_to = email_override or reservation_email
+            if email_to:
+                msg = Message("Brisa Tee Time Cancellation", recipients=[email_to])
+                msg.body = (
+                    f"Hi {first_name},\n\n"
+                    f"Your tee time at {tee_time} on {day} has been cancelled.\n\n"
+                    "If this was a mistake, you can book again on the site.\n"
+                )
+                mail.send(msg)
+        except Exception as e:
+            print(f"Cancel email failed: {e}")
+
         return jsonify({"status": "ok"})
     except Exception as e:
         print(f"/reserve/cancel error: {e}")
-        return jsonify({"error": "Failed to cancel reservation"}), 500
+        return jsonify({"error": "Failed to cancel reservation"}), 500    
 
 @app.route("/load_reservations", methods=["POST"])
 def load_reservations():
