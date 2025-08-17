@@ -123,19 +123,25 @@ def _open_sheet(gc, ref: str):
     return gc.open_by_key(sid)
 
 def _open_reservations_ws(gc):
-    """Open (or create) the 'Reservations' worksheet with headers."""
+    """Open (or create) the 'Reservations' worksheet with headers, including 'slot'."""
     sh = _open_sheet(gc, SHEET_REF)
+    want_headers = [
+        "timestamp_utc", "day", "tee_time",
+        "first_name", "last_name", "country", "email", "status", "slot"
+    ]
     try:
         ws = sh.worksheet("Reservations")
+        rows = ws.get_all_values()
+        if not rows:
+            ws.update("A1:I1", [want_headers])
+        else:
+            have = rows[0]
+            # If 'slot' missing, append it to the header row.
+            if "slot" not in [h.strip().lower() for h in have]:
+                ws.update_cell(1, len(have) + 1, "slot")
     except gspread.WorksheetNotFound:
-        ws = sh.add_worksheet(title="Reservations", rows=2000, cols=10)
-        ws.update(
-            "A1:H1",
-            [[
-                "timestamp_utc", "day", "tee_time",
-                "first_name", "last_name", "country", "email", "status"
-            ]]
-        )
+        ws = sh.add_worksheet(title="Reservations", rows=2000, cols=12)
+        ws.update("A1:I1", [want_headers])
     return ws
 
 # -------------------------
@@ -156,6 +162,11 @@ def reserve():
         last_name  = (player.get("last_name") or "").strip()
         country    = (player.get("country") or "").strip()
         email      = (data.get("email") or "").strip()  # optional
+        slot       = data.get("slot")                   # 0..3 preferred
+        try:
+            slot = int(slot) if slot is not None else None
+        except Exception:
+            slot = None
 
         if not (day and tee_time and first_name and last_name):
             return jsonify({"error": "Missing day, tee_time, first_name, or last_name"}), 400
@@ -165,7 +176,7 @@ def reserve():
         gc = get_gspread_client()
         ws = _open_reservations_ws(gc)
 
-        # naive duplicate check: same player/day/time already exists
+        # Duplicate check: same player already has same day/time
         rows = ws.get_all_values()
         if rows:
             header = rows[0]
@@ -183,9 +194,35 @@ def reserve():
 
         ts = datetime.now(timezone.utc).isoformat()
         ws.append_row(
-            [ts, day, tee_time, first_name, last_name, country, email, "reserved"],
+            [ts, day, tee_time, first_name, last_name, country, email, "reserved", slot],
             value_input_option="RAW"
         )
+
+        # Send confirmation email/SMS (best-effort)
+        players_text = f"{last_name}, {first_name} ({country})".strip()
+        try:
+            if email:
+                msg = Message("Brisa Tee Time Confirmation", recipients=[email])
+                msg.body = (
+                    f"Hi {first_name},\n\n"
+                    f"You're confirmed for {tee_time} on {day}.\n\n"
+                    f"Player: {players_text}\n"
+                )
+                mail.send(msg)
+        except Exception as e:
+            print(f"Email failed: {e}")
+
+        try:
+            phone = data.get("phone")
+            if phone and twilio_client and TWILIO_NUMBER:
+                twilio_client.messages.create(
+                    body=f"Hi {first_name}, you're confirmed for {tee_time} on {day} with Brisa.",
+                    from_=TWILIO_NUMBER,
+                    to=phone,
+                )
+        except Exception as e:
+            print(f"SMS failed: {e}")
+
         return jsonify({"status": "ok"})
     except Exception as e:
         print(f"/reserve error: {e}")
@@ -200,6 +237,11 @@ def reserve_cancel():
         tee_time = (data.get("tee_time") or "").strip()
         first_name = (data.get("first_name") or "").strip()
         last_name  = (data.get("last_name") or "").strip()
+        slot       = data.get("slot")
+        try:
+            slot = int(slot) if slot is not None else None
+        except Exception:
+            slot = None
 
         if not (day and tee_time and first_name and last_name):
             return jsonify({"error": "Missing day, tee_time, first_name, or last_name"}), 400
@@ -215,16 +257,17 @@ def reserve_cancel():
 
         header = rows[0]
         col = {name: i for i, name in enumerate(header)}
-        target_row_index = None  # 1-based in Sheets including header
+        target_row_index = None  # 1-based
 
-        for idx, r in enumerate(rows[1:], start=2):  # start=2 because header is row 1
+        for idx, r in enumerate(rows[1:], start=2):
             if len(r) < len(header):
                 continue
             if (
                 r[col.get("day", 1)] == day and
                 r[col.get("tee_time", 2)] == tee_time and
                 r[col.get("first_name", 3)].strip().lower() == first_name.lower() and
-                r[col.get("last_name", 4)].strip().lower() == last_name.lower()
+                r[col.get("last_name", 4)].strip().lower() == last_name.lower() and
+                (slot is None or str(r[col.get("slot", 8)] or "").strip() == str(slot))
             ):
                 target_row_index = idx
                 break
@@ -237,6 +280,47 @@ def reserve_cancel():
     except Exception as e:
         print(f"/reserve/cancel error: {e}")
         return jsonify({"error": "Failed to cancel reservation"}), 500
+
+@app.route("/load_reservations", methods=["POST"])
+def load_reservations():
+    try:
+        data = request.json or {}
+        day = (data.get("day") or "").strip()
+        if not day:
+            return jsonify({"error": "Missing 'day'"}), 400
+        if not SHEET_REF:
+            return jsonify({"error": "SHEET_ID not configured"}), 500
+
+        gc = get_gspread_client()
+        ws = _open_reservations_ws(gc)
+        rows = ws.get_all_values()
+        if not rows:
+            return jsonify([])
+
+        header = rows[0]
+        col = {name: i for i, name in enumerate(header)}
+        out = []
+        for r in rows[1:]:
+            if len(r) < len(header):
+                continue
+            if r[col.get("day", 1)] != day:
+                continue
+            status = (r[col.get("status", 7)] or "").strip().lower()
+            if status and status != "reserved":
+                continue
+            out.append({
+                "day": r[col.get("day", 1)],
+                "tee_time": r[col.get("tee_time", 2)],
+                "first_name": r[col.get("first_name", 3)],
+                "last_name": r[col.get("last_name", 4)],
+                "country": r[col.get("country", 5)],
+                "email": r[col.get("email", 6)],
+                "slot": (int(r[col.get("slot", 8)]) if (len(r) > col.get("slot", 8) and r[col.get("slot", 8)].strip() != "") else None),
+            })
+        return jsonify(out)
+    except Exception as e:
+        print(f"/load_reservations error: {e}")
+        return jsonify({"error": "Failed to load reservations"}), 500
 
 @app.route("/load_players", methods=["POST"])
 def load_players():
