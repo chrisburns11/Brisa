@@ -2,6 +2,7 @@ import os
 import re
 import json
 import gspread
+from datetime import datetime, timezone
 from urllib.parse import urlparse, parse_qs
 from google.oauth2.service_account import Credentials
 from flask import Flask, request, jsonify, render_template
@@ -37,7 +38,7 @@ twilio_client = Client(TWILIO_SID, TWILIO_AUTH) if (TWILIO_SID and TWILIO_AUTH) 
 # -------------------------
 # Google Sheets setup
 # -------------------------
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # Accept either a full Sheets URL or the bare spreadsheet ID
 SHEET_REF = os.getenv("SHEET_URL") or os.getenv("SHEET_ID")
@@ -121,12 +122,121 @@ def _open_sheet(gc, ref: str):
         raise ValueError("Could not extract a spreadsheet ID from SHEET_URL/SHEET_ID")
     return gc.open_by_key(sid)
 
+def _open_reservations_ws(gc):
+    """Open (or create) the 'Reservations' worksheet with headers."""
+    sh = _open_sheet(gc, SHEET_REF)
+    try:
+        ws = sh.worksheet("Reservations")
+    except gspread.WorksheetNotFound:
+        ws = sh.add_worksheet(title="Reservations", rows=2000, cols=10)
+        ws.update(
+            "A1:H1",
+            [[
+                "timestamp_utc", "day", "tee_time",
+                "first_name", "last_name", "country", "email", "status"
+            ]]
+        )
+    return ws
+
 # -------------------------
 # Routes
 # -------------------------
 @app.route("/")
 def index():
     return render_template("home.html")
+
+@app.route("/reserve", methods=["POST"])
+def reserve():
+    try:
+        data = request.json or {}
+        day = (data.get("day") or "").strip()
+        tee_time = (data.get("tee_time") or "").strip()
+        player = data.get("player") or {}
+        first_name = (player.get("first_name") or "").strip()
+        last_name  = (player.get("last_name") or "").strip()
+        country    = (player.get("country") or "").strip()
+        email      = (data.get("email") or "").strip()  # optional
+
+        if not (day and tee_time and first_name and last_name):
+            return jsonify({"error": "Missing day, tee_time, first_name, or last_name"}), 400
+        if not SHEET_REF:
+            return jsonify({"error": "SHEET_ID not configured"}), 500
+
+        gc = get_gspread_client()
+        ws = _open_reservations_ws(gc)
+
+        # naive duplicate check: same player/day/time already exists
+        rows = ws.get_all_values()
+        if rows:
+            header = rows[0]
+            col = {name: i for i, name in enumerate(header)}
+            for r in rows[1:]:
+                if len(r) < len(header):
+                    continue
+                if (
+                    r[col.get("day", 1)] == day and
+                    r[col.get("tee_time", 2)] == tee_time and
+                    r[col.get("first_name", 3)].strip().lower() == first_name.lower() and
+                    r[col.get("last_name", 4)].strip().lower() == last_name.lower()
+                ):
+                    return jsonify({"error": "This player already has this tee time"}), 409
+
+        ts = datetime.now(timezone.utc).isoformat()
+        ws.append_row(
+            [ts, day, tee_time, first_name, last_name, country, email, "reserved"],
+            value_input_option="RAW"
+        )
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        print(f"/reserve error: {e}")
+        return jsonify({"error": "Failed to reserve"}), 500
+
+
+@app.route("/reserve/cancel", methods=["POST"])
+def reserve_cancel():
+    try:
+        data = request.json or {}
+        day = (data.get("day") or "").strip()
+        tee_time = (data.get("tee_time") or "").strip()
+        first_name = (data.get("first_name") or "").strip()
+        last_name  = (data.get("last_name") or "").strip()
+
+        if not (day and tee_time and first_name and last_name):
+            return jsonify({"error": "Missing day, tee_time, first_name, or last_name"}), 400
+        if not SHEET_REF:
+            return jsonify({"error": "SHEET_ID not configured"}), 500
+
+        gc = get_gspread_client()
+        ws = _open_reservations_ws(gc)
+
+        rows = ws.get_all_values()
+        if not rows:
+            return jsonify({"error": "No reservations found"}), 404
+
+        header = rows[0]
+        col = {name: i for i, name in enumerate(header)}
+        target_row_index = None  # 1-based in Sheets including header
+
+        for idx, r in enumerate(rows[1:], start=2):  # start=2 because header is row 1
+            if len(r) < len(header):
+                continue
+            if (
+                r[col.get("day", 1)] == day and
+                r[col.get("tee_time", 2)] == tee_time and
+                r[col.get("first_name", 3)].strip().lower() == first_name.lower() and
+                r[col.get("last_name", 4)].strip().lower() == last_name.lower()
+            ):
+                target_row_index = idx
+                break
+
+        if not target_row_index:
+            return jsonify({"error": "Reservation not found"}), 404
+
+        ws.delete_rows(target_row_index)
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        print(f"/reserve/cancel error: {e}")
+        return jsonify({"error": "Failed to cancel reservation"}), 500
 
 @app.route("/load_players", methods=["POST"])
 def load_players():

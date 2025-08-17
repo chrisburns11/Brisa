@@ -8,7 +8,7 @@
     :root{
       --thin-border: 1px solid #000;
       --pill-grad: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02));
-      --tee-grad: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.02));
+      --tee-grad: linear-gradient(135deg, rgba(255,255,255,0.70), rgba(235,235,235,0.50));
     }
 
     /* page + video bg */
@@ -58,41 +58,59 @@
     }
     .pill:hover{ transform: translateY(-1px); }
     .pill.active{
-      background:#000; color:#fff;
+      background:#ba0c2f; color:#fff;
     }
 
     /* tee-time grid (2 columns mobile-first) */
     .tee-time-grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(140px, 1fr));
-      gap: 16px;
-      max-width: 520px;
-      margin: 12px auto 0;
-    }
-    @media (min-width: 560px){
-      .tee-time-grid{ grid-template-columns: repeat(2, minmax(180px, 1fr)); max-width: 640px; }
-    }
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 16px;
+  max-width: 640px;
+  margin: 12px auto 0;
+  align-items: start;
+}
 
     /* tee-time pill */
     .tee-time{
-      background: var(--tee-grad);
-      border: var(--thin-border);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,.06);
-    }
+  position: relative;
+  overflow: visible;
+  background: var(--tee-grad);
+  border: var(--thin-border);
+  border-radius: 12px;
+  padding: 4px 8px;
+  min-height: 46px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
     .tee-time .time-header{
-      font-weight: 700; font-size: 18px;
-      cursor: pointer;
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .tee-time .time-header .chev{
-      font-size: 16px; opacity:.7; transition: transform .15s ease;
-    }
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  font-weight: 700;
+  font-size: 20px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.tee-time .time-header .time-label{
+  flex: 1;
+  display: block;
+  text-align: center;
+}
+
+.tee-time .time-header .chev{
+  position: absolute;
+  right: 8px;
+  font-size: 16px;
+  opacity: .7;
+  transition: transform .15s ease;
+}
     .tee-time.expanded .time-header .chev{ transform: rotate(90deg); }
 
-    .player-buttons{ margin-top:10px; display:none; }
-    .tee-time.expanded .player-buttons{ display:block; }
+    .player-buttons{ display:none; margin-top:10px; }
+.tee-time.expanded .player-buttons{ display:grid; grid-template-columns:1fr; gap:8px; }
 
     .add-player-btn{
       display:inline-flex; align-items:center; gap:6px;
@@ -105,9 +123,17 @@
     .add-player-btn:hover{ transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.12); }
 
     select{
-      margin-top: 6px; padding: 6px 8px; font-size:14px;
-      border: var(--thin-border); border-radius: 8px; background:#fff;
-    }
+  width: 100%;
+  margin-top: 6px; padding: 6px 8px; font-size:14px;
+  border: var(--thin-border); border-radius: 8px;
+  background: linear-gradient(135deg, rgba(186,12,47,0.28), rgba(255,100,100,0.18));
+  text-align: center;
+  text-align-last: center;
+}
+select:valid{
+  text-align: left;
+  text-align-last: left;
+}
 
     /* selected player chip */
     .player-chip{
@@ -185,103 +211,68 @@
   }
 
   function createTeeTimeElement(teeTime) {
-    const container = document.createElement('div');
-    container.className = 'tee-time';
+  const container = document.createElement('div');
+  container.className = 'tee-time';
 
-    const timeHeader = document.createElement('div');
-    timeHeader.className = 'time-header';
-    timeHeader.innerHTML = `<span>${teeTime}</span><span class="chev">›</span>`;
-    timeHeader.addEventListener('click', () => {
-      container.classList.toggle('expanded');
-    });
+  const timeHeader = document.createElement('div');
+  timeHeader.className = 'time-header';
+  timeHeader.innerHTML = `<span class="time-label">${teeTime}</span><span class="chev">›</span>`;
 
-    const buttonsDiv = document.createElement('div');
-    buttonsDiv.className = 'player-buttons';
+  const buttonsDiv = document.createElement('div');
+  buttonsDiv.className = 'player-buttons';
 
-    for (let i = 0; i < 4; i++) {
-      const btn = document.createElement('button');
-      btn.className = 'add-player-btn';
-      btn.innerHTML = '<span>➕</span> Add Player';
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showDropdown(btn, teeTime, i);
-      });
-      buttonsDiv.appendChild(btn);
+  for (let i = 0; i < 4; i++) {
+    buttonsDiv.appendChild(buildPlayerSelect(teeTime, i));
+  }
+
+  timeHeader.addEventListener('click', (e) => {
+  e.stopPropagation();
+  container.classList.toggle('expanded');
+});
+
+  container.appendChild(timeHeader);
+  container.appendChild(buttonsDiv);
+  return container;
+}
+
+function buildPlayerSelect(teeTime, slotIndex) {
+  const select = document.createElement('select');
+  select.required = true;
+select.innerHTML = `<option value="" disabled selected hidden>-- Select Player --</option>`;
+  playersData.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = JSON.stringify(p);
+    opt.textContent = `${p.last_name}, ${p.first_name} ${p.country}`;
+    select.appendChild(opt);
+  });
+
+  select.addEventListener('click', (e) => e.stopPropagation());
+
+  select.addEventListener('change', () => {
+    selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
+
+    if (!select.value) {
+      delete selectedPlayers[currentDay][teeTime][slotIndex];
+      return;
     }
 
-    container.appendChild(timeHeader);
-    container.appendChild(buttonsDiv);
-    return container;
-  }
+    const chosen = JSON.parse(select.value);
 
-  function showDropdown(button, teeTime, slotIndex) {
-    const select = document.createElement('select');
-    select.innerHTML = `<option value="">-- Choose Player --</option>`;
-    playersData.forEach(p => {
-      const option = document.createElement('option');
-      option.value = JSON.stringify(p);
-      option.textContent = `${p.last_name}, ${p.first_name} ${p.country}`;
-      select.appendChild(option);
-    });
+    const alreadyUsed = Object.values(selectedPlayers[currentDay])
+      .flat()
+      .some(p => p && p.first_name === chosen.first_name && p.last_name === chosen.last_name && p !== selectedPlayers[currentDay][teeTime][slotIndex]);
 
-    select.addEventListener('click', (e) => e.stopPropagation());
+    if (alreadyUsed) {
+      alert("Player already assigned a tee time!");
+      select.value = "";
+      return;
+    }
 
-    select.addEventListener('change', () => {
-      const selected = JSON.parse(select.value || '{}');
-      if (!selected.first_name || !selected.last_name) return;
+    selectedPlayers[currentDay][teeTime][slotIndex] = chosen;
+  });
 
-      selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
-
-      const alreadyUsed = Object.values(selectedPlayers[currentDay])
-        .flat()
-        .some(p => p && p.first_name === selected.first_name && p.last_name === selected.last_name);
-      if (alreadyUsed) {
-        alert("Player already assigned a tee time!");
-        return;
-      }
-      selectedPlayers[currentDay][teeTime][slotIndex] = selected;
-
-      const chip = document.createElement('div');
-      chip.className = 'player-chip';
-      chip.textContent = `${selected.first_name} ${selected.last_name} ${selected.country}`;
-
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove-btn';
-      removeBtn.setAttribute('title', 'Remove player');
-      removeBtn.setAttribute('aria-label', 'Remove player');
-
-      // inline SVG "minus in circle"
-      removeBtn.innerHTML = `
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <circle cx="12" cy="12" r="10" fill="none" stroke="#000" stroke-width="2"/>
-          <line x1="7" y1="12" x2="17" y2="12" stroke="#000" stroke-width="2" />
-        </svg>
-        <span>Remove</span>
-      `;
-
-      removeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        delete selectedPlayers[currentDay][teeTime][slotIndex];
-        chip.replaceWith(newPlayerButton(teeTime, slotIndex));
-      });
-
-      chip.appendChild(removeBtn);
-      select.replaceWith(chip);
-    });
-
-    button.replaceWith(select);
-  }
-
-  function newPlayerButton(teeTime, slotIndex) {
-    const btn = document.createElement('button');
-    btn.className = 'add-player-btn';
-    btn.innerHTML = '<span>➕</span> Add Player';
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      showDropdown(btn, teeTime, slotIndex);
-    });
-    return btn;
-  }
+  return select;
+}
 
   async function loadPlayers() {
     try {
@@ -296,6 +287,7 @@
       const teeTimes = generateTeeTimes(); // 6:50am → 2:10pm every 10 min
       teeTimeGrid.innerHTML = "";
       teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
+requestAnimationFrame(() => masonryRefresh());
     } catch (e) {
       console.error(e);
       teeTimeGrid.innerHTML = "<p style='text-align:center;color:#111;background:rgba(255,255,255,.7);border:1px solid #000;border-radius:8px;padding:12px;'>Unable to load players.</p>";
