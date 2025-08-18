@@ -63,54 +63,52 @@
 
     /* tee-time grid (2 columns mobile-first) */
     .tee-time-grid{
-  display: grid;
-  grid-template-columns: repeat(2, minmax(140px, 1fr));
-  gap: 16px;
-  max-width: 640px;
-  margin: 12px auto 0;
-  align-items: start;
-}
+      display: grid;
+      grid-template-columns: repeat(2, minmax(140px, 1fr));
+      gap: 16px;
+      max-width: 640px;
+      margin: 12px auto 0;
+      align-items: start;
+    }
 
     /* tee-time pill */
     .tee-time{
-  position: relative;
-  overflow: visible;
-  background: var(--tee-grad);
-  border: var(--thin-border);
-  border-radius: 12px;
-  padding: 4px 8px;
-  min-height: 46px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.06);
-}
+      position: relative;
+      overflow: visible;
+      background: var(--tee-grad);
+      border: var(--thin-border);
+      border-radius: 12px;
+      padding: 4px 8px;
+      min-height: 46px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
     .tee-time .time-header{
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  font-weight: 700;
-  font-size: 20px;
-  cursor: pointer;
-  text-align: center;
-}
-
-.tee-time .time-header .time-label{
-  flex: 1;
-  display: block;
-  text-align: center;
-}
-
-.tee-time .time-header .chev{
-  position: absolute;
-  right: 8px;
-  font-size: 16px;
-  opacity: .7;
-  transition: transform .15s ease;
-}
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      font-weight: 700;
+      font-size: 20px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .tee-time .time-header .time-label{
+      flex: 1;
+      display: block;
+      text-align: center;
+    }
+    .tee-time .time-header .chev{
+      position: absolute;
+      right: 8px;
+      font-size: 16px;
+      opacity: .7;
+      transition: transform .15s ease;
+    }
     .tee-time.expanded .time-header .chev{ transform: rotate(90deg); }
 
     .player-buttons{ display:none; margin-top:10px; }
-.tee-time.expanded .player-buttons{ display:grid; grid-template-columns:1fr; gap:8px; }
+    .tee-time.expanded .player-buttons{ display:grid; grid-template-columns:1fr; gap:8px; }
 
     .add-player-btn{
       display:inline-flex; align-items:center; gap:6px;
@@ -123,17 +121,17 @@
     .add-player-btn:hover{ transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.12); }
 
     select{
-  width: 100%;
-  margin-top: 6px; padding: 6px 8px; font-size:14px;
-  border: var(--thin-border); border-radius: 8px;
-  background: linear-gradient(135deg, rgba(186,12,47,0.28), rgba(255,100,100,0.18));
-  text-align: center;
-  text-align-last: center;
-}
-select:valid{
-  text-align: left;
-  text-align-last: left;
-}
+      width: 100%;
+      margin-top: 6px; padding: 6px 8px; font-size:14px;
+      border: var(--thin-border); border-radius: 8px;
+      background: linear-gradient(135deg, rgba(186,12,47,0.28), rgba(255,100,100,0.18));
+      text-align: center;
+      text-align-last: center;
+    }
+    select:valid{
+      text-align: left;
+      text-align-last: left;
+    }
 
     /* selected player chip */
     .player-chip{
@@ -155,20 +153,60 @@ select:valid{
     .remove-btn:hover{ background:#f3f3f3; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,.12); }
     .remove-btn svg{ width:14px; height:14px; }
 
-.slot-row{ display:flex; gap:8px; align-items:center; }
-.slot-row select{ flex:1; }
+    .slot-row{ display:flex; gap:8px; align-items:center; }
+    .slot-row select{ flex:1; }
 
     .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:50}
-.modal-backdrop.show{display:flex}
-.modal{background:#fff;border:1px solid #000;border-radius:12px;padding:16px;width:min(420px,92vw);box-shadow:0 8px 24px rgba(0,0,0,.2)}
-.modal h3{margin:0 0 8px;font-size:18px}
-.modal p{margin:0 0 12px;font-size:14px}
-.modal .field{display:grid;gap:6px;margin-bottom:12px}
-.modal input{width:100%;padding:8px 10px;border:1px solid #000;border-radius:8px;font-size:14px}
-.modal .actions{display:flex;gap:8px;justify-content:flex-end}
-.modal .btn{padding:8px 12px;border:1px solid #000;border-radius:8px;background:#fff;cursor:pointer;font-weight:600}
-.modal .btn.primary{background:#ba0c2f;color:#fff}
+    .modal-backdrop.show{display:flex}
+    .modal{background:#fff;border:1px solid #000;border-radius:12px;padding:16px;width:min(420px,92vw);box-shadow:0 8px 24px rgba(0,0,0,.2)}
+    .modal h3{margin:0 0 8px;font-size:18px}
+    .modal p{margin:0 0 12px;font-size:14px}
+    .modal .field{display:grid;gap:6px;margin-bottom:12px}
+    .modal input{width:100%;padding:8px 10px;border:1px solid #000;border-radius:8px;font-size:14px}
+    .modal .actions{display:flex;gap:8px;justify-content:flex-end}
+    .modal .btn{padding:8px 12px;border:1px solid #000;border-radius:8px;background:#fff;cursor:pointer;font-weight:600}
+    .modal .btn.primary{background:#ba0c2f;color:#fff}
 
+    /* Narrow + center the email field and center the modal title/body/label/buttons */
+    #confirmModal #modalEmail {
+      width: 240px;   /* tweak as you like */
+      max-width: 100%;
+      display: block;
+      margin: 0 auto;
+    }
+    #confirmModal #modalTitle,
+    #confirmModal #modalBody { text-align: center; }
+    #confirmModal .field label { text-align: center; }
+    #confirmModal .actions { justify-content: center; }
+
+    /* Player Search */
+    .search-wrap{ max-width:640px; margin: 8px auto 0; }
+    .search-input{
+      width:100%; padding:10px 12px; border:1px solid #000; border-radius:10px;
+      background: rgba(255,255,255,.85); font-size:14px;
+    }
+    .search-results{
+      list-style:none; margin:8px 0 0; padding:0;
+      background: rgba(255,255,255,.85); border:1px solid #000; border-radius:10px;
+      display:none;
+    }
+    .search-results li{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px; cursor:pointer; border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .search-results li:last-child{ border-bottom:none; }
+    .search-results li:hover{ background:#f7f7f7; }
+    .search-results .meta{ font-size:12px; opacity:.75; }
+
+    /* Tee-time highlight pulse when jumped-to */
+    @keyframes ttPulse {
+      0% { box-shadow: 0 0 0 0 rgba(186,12,47,.35); }
+      100% { box-shadow: 0 0 0 12px rgba(186,12,47,0); }
+    }
+    .tee-time.highlight {
+      outline: 2px solid #ba0c2f;
+      animation: ttPulse 1s ease-out 2;
+    }
   </style>
 </head>
 <body>
@@ -187,8 +225,19 @@ select:valid{
     </div>
   </div>
 
-  <div class="tee-time-grid" id="teeTimeGrid"></div>
+  <!-- Player Search -->
+  <div class="search-wrap">
+    <input
+      id="playerSearch"
+      class="search-input"
+      type="text"
+      placeholder="Search your name to find your tee time"
+      aria-label="Player Search"
+    />
+    <ul id="searchResults" class="search-results" role="listbox" aria-label="Matching reservations"></ul>
+  </div>
 
+  <div class="tee-time-grid" id="teeTimeGrid"></div>
 </div>
 
 <div id="confirmModal" class="modal-backdrop" aria-hidden="true">
@@ -201,7 +250,7 @@ select:valid{
     </div>
     <div class="actions">
       <button id="modalCancel" type="button" class="btn">Cancel</button>
-<button id="modalConfirm" type="button" class="btn primary">Confirm</button>
+      <button id="modalConfirm" type="button" class="btn primary">Confirm</button>
     </div>
   </div>
 </div>
@@ -213,96 +262,225 @@ select:valid{
   let selectedPlayers = { Saturday: {}, Sunday: {} };
   let currentDay = 'Saturday';
 
-const confirmModal = document.getElementById('confirmModal');
-const modalTitle = document.getElementById('modalTitle');
-const modalBody = document.getElementById('modalBody');
-const modalEmail = document.getElementById('modalEmail');
-const modalCancel = document.getElementById('modalCancel');
-const modalConfirm = document.getElementById('modalConfirm');
+  const confirmModal = document.getElementById('confirmModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const modalEmail = document.getElementById('modalEmail');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalConfirm = document.getElementById('modalConfirm');
 
-let pendingReservation = null;
+  // Cache reservations for quick searching
+  const resCache = { Saturday: null, Sunday: null };
 
-function formatLabel(first, last, country) {
-  return `${(last||'').trim()}, ${(first||'').trim()} ${(country||'').trim()}`.trim();
-}
-function norm(s){ return (s||'').trim().toLowerCase(); }
+  // Search elements
+  const playerSearch  = document.getElementById('playerSearch');
+  const searchResults = document.getElementById('searchResults');
 
-function openModal(day, tee_time, player, slotIndex, selectEl, chipEl, chipLabel){
-  pendingReservation = { day, tee_time, player, slotIndex, selectEl, chipEl, chipLabel };
-  modalTitle.textContent = 'Confirm your tee time';
-  modalBody.textContent = `${(player.first_name||'').trim()} ${(player.last_name||'').trim()} — ${day} ${tee_time}`;
-  modalEmail.value = '';
-  confirmModal.classList.add('show');
-  confirmModal.setAttribute('aria-hidden', 'false');
-  setTimeout(() => modalEmail.focus(), 0);
-}
-
-function closeModal(){
-  if (pendingReservation?.selectEl && pendingReservation.selectEl.dataset.locked !== '1') {
-    pendingReservation.selectEl.value = '';
-  }
-  confirmModal.classList.remove('show');
-  confirmModal.setAttribute('aria-hidden', 'true');
-  pendingReservation = null;
-}
-
-modalCancel.addEventListener('click', closeModal);
-confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) closeModal(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
-
-modalConfirm.addEventListener('click', async () => {
-  if (!pendingReservation) return;
-  const email = modalEmail.value.trim();
-  if (!email){ alert('Please enter your email.'); return; }
-
-  modalConfirm.disabled = true;
-  const { day, tee_time, player, slotIndex, selectEl, chipEl, chipLabel } = pendingReservation;
-
-  try {
-    const res = await fetch('/reserve', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ day, tee_time, player, email, slot: slotIndex })
+  // Programmatically switch day and (re)load UI
+  function setDay(day){
+    // flip tab UI
+    document.querySelectorAll('.pill-group .pill').forEach(t=>{
+      const active = t.dataset.day === day;
+      t.classList.toggle('active', active);
+      t.setAttribute('aria-selected', String(active));
     });
-    const data = await res.json().catch(()=> ({}));
-    if (!res.ok){
-      alert(data.error || 'Reservation failed');
-      selectEl.value = '';
-      modalConfirm.disabled = false;
+    currentDay = day;
+
+    // clear search UI when switching days
+    playerSearch.value = '';
+    renderSearchResults([]);
+
+    // return the promise so callers can await DOM being built
+    return loadPlayers();
+  }
+
+  // Fetch reservations JSON only (no DOM touching)
+  async function fetchReservations(day){
+    const res = await fetch('/load_reservations', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ day })
+    });
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }
+
+  // Make sure we have both days cached
+  async function ensureAllReservations(){
+    if (!resCache.Saturday) resCache.Saturday = await fetchReservations('Saturday');
+    if (!resCache.Sunday)   resCache.Sunday   = await fetchReservations('Sunday');
+  }
+
+  // Render dropdown results
+  function renderSearchResults(items){
+    if (!items.length){
+      searchResults.style.display = 'none';
+      searchResults.innerHTML = '';
       return;
     }
+    searchResults.innerHTML = items.map(item => `
+      <li data-day="${item.day}" data-time="${item.tee_time}">
+        <span>${item.last_name}, ${item.first_name}</span>
+        <span class="meta">${item.day} • ${item.tee_time}</span>
+      </li>
+    `).join('');
+    searchResults.style.display = 'block';
 
-    // Update local model
-    selectedPlayers[day][tee_time] = selectedPlayers[day][tee_time] || [];
-selectedPlayers[day][tee_time][slotIndex] = {
-  first_name: (player.first_name || '').trim(),
-  last_name:  (player.last_name  || '').trim(),
-  country:    (player.country    || '').trim()
-};
-
-    // Flip UI: hide select, show chip with label
-    selectEl.dataset.locked = '1';
-    selectEl.disabled = true;
-    selectEl.style.display = 'none';
-    chipLabel.textContent = formatLabel(player.first_name, player.last_name, player.country);
-    chipEl.style.display = 'inline-flex';
-
-    closeModal();
-  } catch {
-    alert('Reservation failed');
-  } finally {
-    modalConfirm.disabled = false;
-  }
-});
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected','false'); });
-      tab.classList.add('active');
-      tab.setAttribute('aria-selected','true');
-      currentDay = tab.dataset.day;
-      loadPlayers();
+    // click -> jump to tee time
+    [...searchResults.querySelectorAll('li')].forEach(li => {
+      li.addEventListener('click', async () => {
+        const day = li.dataset.day;
+        const teeTime = li.dataset.time;
+        playerSearch.blur();
+        searchResults.style.display = 'none';
+        await jumpTo(day, teeTime);
+      });
     });
+  }
+
+  // Smoothly jump, expand, and highlight a tee time
+  async function jumpTo(day, teeTime){
+    // switch day if needed and wait for the grid to rebuild
+    if (currentDay !== day) await setDay(day);
+
+    // wait for the target to exist
+    const findEl = () => [...teeTimeGrid.querySelectorAll('.tee-time')]
+      .find(div => div.querySelector('.time-label')?.textContent === teeTime);
+
+    let el = findEl(), tries = 0;
+    while (!el && tries < 60){
+      await new Promise(r => setTimeout(r, 50));
+      el = findEl(); tries++;
+    }
+    if (!el) return;
+
+    // expand, scroll, highlight
+    el.classList.add('expanded');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('highlight');
+    setTimeout(()=> el.classList.remove('highlight'), 1600);
+  }
+
+  // Wire search input
+  playerSearch.addEventListener('input', async () => {
+    const q = (playerSearch.value || '').trim().toLowerCase();
+    if (q.length < 2){ renderSearchResults([]); return; }
+
+    await ensureAllReservations();
+    const matches = [];
+
+    ['Saturday','Sunday'].forEach(day => {
+      (resCache[day] || []).forEach(r => {
+        const a = `${(r.first_name||'').toLowerCase()} ${(r.last_name||'').toLowerCase()}`;
+        const b = `${(r.last_name||'').toLowerCase()}, ${(r.first_name||'').toLowerCase()}`;
+        if (a.includes(q) || b.includes(q)){
+          matches.push({ ...r, day });
+        }
+      });
+    });
+
+    renderSearchResults(matches.slice(0, 12)); // cap list
+  });
+
+  // Hide results on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) {
+      searchResults.style.display = 'none';
+    }
+  });
+
+  let pendingReservation = null;
+
+  function formatLabel(first, last, country) {
+    return `${(last||'').trim()}, ${(first||'').trim()} ${(country||'').trim()}`.trim();
+  }
+  function norm(s){ return (s||'').trim().toLowerCase(); }
+
+  function openModal(day, tee_time, player, slotIndex, selectEl, chipEl, chipLabel){
+    pendingReservation = { day, tee_time, player, slotIndex, selectEl, chipEl, chipLabel };
+    modalTitle.textContent = 'Confirm Your Tee Time';
+    modalBody.textContent = `${(player.first_name||'').trim()} ${(player.last_name||'').trim()} — ${day} ${tee_time}`;
+    modalEmail.value = '';
+    confirmModal.classList.add('show');
+    confirmModal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => modalEmail.focus(), 0);
+  }
+
+  function closeModal(){
+    if (pendingReservation?.selectEl && pendingReservation.selectEl.dataset.locked !== '1') {
+      pendingReservation.selectEl.value = '';
+    }
+    confirmModal.classList.remove('show');
+    confirmModal.setAttribute('aria-hidden', 'true');
+    pendingReservation = null;
+  }
+
+  modalCancel.addEventListener('click', closeModal);
+  confirmModal.addEventListener('click', (e) => { if (e.target === confirmModal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  modalConfirm.addEventListener('click', async () => {
+    if (!pendingReservation) return;
+    const email = modalEmail.value.trim();
+    if (!email){ alert('Please enter your email.'); return; }
+
+    modalConfirm.disabled = true;
+    const { day, tee_time, player, slotIndex, selectEl, chipEl, chipLabel } = pendingReservation;
+
+    try {
+      const res = await fetch('/reserve', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ day, tee_time, player, email, slot: slotIndex })
+      });
+      const data = await res.json().catch(()=> ({}));
+      if (!res.ok){
+        alert(data.error || 'Reservation failed');
+        selectEl.value = '';
+        modalConfirm.disabled = false;
+        return;
+      }
+
+      // Update local model
+      selectedPlayers[day][tee_time] = selectedPlayers[day][tee_time] || [];
+      selectedPlayers[day][tee_time][slotIndex] = {
+        first_name: (player.first_name || '').trim(),
+        last_name:  (player.last_name  || '').trim(),
+        country:    (player.country    || '').trim()
+      };
+
+      // Flip UI: hide select, show chip with label
+      selectEl.dataset.locked = '1';
+      selectEl.disabled = true;
+      selectEl.style.display = 'none';
+      chipLabel.textContent = formatLabel(player.first_name, player.last_name, player.country);
+      chipEl.style.display = 'inline-flex';
+
+      // keep search cache fresh
+      resCache[day] = (resCache[day] || []).filter(r =>
+        !(r.tee_time === tee_time &&
+          (r.first_name||'').toLowerCase() === (player.first_name||'').toLowerCase() &&
+          (r.last_name||'').toLowerCase()  === (player.last_name||'').toLowerCase())
+      );
+      resCache[day].push({
+        day,
+        tee_time,
+        first_name: player.first_name,
+        last_name:  player.last_name,
+        country:    player.country || '',
+        slot:       slotIndex
+      });
+
+      closeModal();
+    } catch {
+      alert('Reservation failed');
+    } finally {
+      modalConfirm.disabled = false;
+    }
+  });
+
+  // Use setDay for tabs
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => setDay(tab.dataset.day));
   });
 
   // Generate 10-minute tee times from 6:50am to 2:10pm inclusive
@@ -323,237 +501,249 @@ selectedPlayers[day][tee_time][slotIndex] = {
   }
 
   function createTeeTimeElement(teeTime) {
-  const container = document.createElement('div');
-  container.className = 'tee-time';
+    const container = document.createElement('div');
+    container.className = 'tee-time';
 
-  const timeHeader = document.createElement('div');
-  timeHeader.className = 'time-header';
-  timeHeader.innerHTML = `<span class="time-label">${teeTime}</span><span class="chev">›</span>`;
+    const timeHeader = document.createElement('div');
+    timeHeader.className = 'time-header';
+    timeHeader.innerHTML = `<span class="time-label">${teeTime}</span><span class="chev">›</span>`;
 
-  const buttonsDiv = document.createElement('div');
-  buttonsDiv.className = 'player-buttons';
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.className = 'player-buttons';
 
-  for (let i = 0; i < 4; i++) {
-    buttonsDiv.appendChild(buildPlayerSelect(teeTime, i));
-  }
+    for (let i = 0; i < 4; i++) {
+      buttonsDiv.appendChild(buildPlayerSelect(teeTime, i));
+    }
 
-  timeHeader.addEventListener('click', (e) => {
-  e.stopPropagation();
-  container.classList.toggle('expanded');
-});
-
-  container.appendChild(timeHeader);
-  container.appendChild(buttonsDiv);
-  return container;
-}
-
-function buildPlayerSelect(teeTime, slotIndex) {
-  const row = document.createElement('div');
-  row.className = 'slot-row';
-
-  // --- the select (shown when empty/unreserved) ---
-  const select = document.createElement('select');
-  select.required = true;
-  select.innerHTML = `<option value="" disabled selected hidden>-- Select Player --</option>`;
-  playersData.forEach(p => {
-    const opt = document.createElement('option');
-    const clean = {
-  first_name: (p.first_name||'').trim(),
-  last_name:  (p.last_name||'').trim(),
-  country:    (p.country||'').trim()
-};
-opt.value = JSON.stringify(clean);
-opt.textContent = formatLabel(clean.first_name, clean.last_name, clean.country);
-    select.appendChild(opt);
-  });
-
-  // Stop header toggle
-  select.addEventListener('click', (e) => e.stopPropagation());
-
-  // --- the chip (hidden until reserved) ---
-  const chip = document.createElement('div');
-  chip.className = 'player-chip';
-  chip.style.display = 'none';              // hidden by default
-
-  const chipLabel = document.createElement('span');
-  chipLabel.className = 'chip-label';
-  chip.appendChild(chipLabel);
-
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.className = 'remove-btn';
-  removeBtn.textContent = 'Remove';
-  chip.appendChild(removeBtn);
-
-  // Remove handler -> /reserve/cancel
-  removeBtn.addEventListener('click', async (e) => {
-  e.stopPropagation();
-  const player = selectedPlayers[currentDay][teeTime]?.[slotIndex];
-  if (!player) return;
-
-  if (!confirm(`Remove ${player.first_name} ${player.last_name} from ${teeTime}?`)) return;
-
-  // Ask for email so we can send a cancellation confirmation
-  const emailInput = prompt("Enter your email to receive a cancellation confirmation:");
-  if (emailInput === null) return; // user hit cancel
-  const email = (emailInput || "").trim();
-  if (!email) {
-    alert("Email is required to receive a cancellation confirmation.");
-    return;
-  }
-
-  try {
-    const res = await fetch('/reserve/cancel', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        day: currentDay,
-        tee_time: teeTime,
-        first_name: player.first_name,
-        last_name: player.last_name,
-        slot: slotIndex,
-        email // <- pass the email to the server
-      })
+    timeHeader.addEventListener('click', (e) => {
+      e.stopPropagation();
+      container.classList.toggle('expanded');
     });
-    const data = await res.json().catch(()=> ({}));
-    if (!res.ok) { alert(data.error || 'Failed to cancel'); return; }
 
-    // flip UI back to "empty"
-    if (selectedPlayers[currentDay][teeTime]) {
-      selectedPlayers[currentDay][teeTime][slotIndex] = null;
-    }
-    select.dataset.locked = '';
-    select.disabled = false;
-    select.value = '';
-    select.style.display = '';      // show select again
-    chip.style.display = 'none';    // hide chip
-  } catch {
-    alert('Failed to cancel');
+    container.appendChild(timeHeader);
+    container.appendChild(buttonsDiv);
+    return container;
   }
-});
 
-  // When a player is chosen -> open modal
-  select.addEventListener('change', () => {
-    if (!select.value) return;
-    if (select.dataset.locked === '1') return;
+  function buildPlayerSelect(teeTime, slotIndex) {
+    const row = document.createElement('div');
+    row.className = 'slot-row';
 
-    const chosen = JSON.parse(select.value);
-    selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
+    // --- the select (shown when empty/unreserved) ---
+    const select = document.createElement('select');
+    select.required = true;
+    select.innerHTML = `<option value="" disabled selected hidden>-- Select Player --</option>`;
+    playersData.forEach(p => {
+      const opt = document.createElement('option');
+      const clean = {
+        first_name: (p.first_name||'').trim(),
+        last_name:  (p.last_name||'').trim(),
+        country:    (p.country||'').trim()
+      };
+      opt.value = JSON.stringify(clean);
+      opt.textContent = formatLabel(clean.first_name, clean.last_name, clean.country);
+      select.appendChild(opt);
+    });
 
-    const alreadyUsed = Object.values(selectedPlayers[currentDay])
-      .flat()
-      .some(p => p &&
-           norm(p.first_name) === norm(chosen.first_name) &&
-           norm(p.last_name)  === norm(chosen.last_name) &&
-           p !== selectedPlayers[currentDay][teeTime][slotIndex]);
+    // Stop header toggle
+    select.addEventListener('click', (e) => e.stopPropagation());
 
-    if (alreadyUsed) {
-      alert("Player already assigned a tee time!");
-      select.value = "";
-      return;
-    }
+    // --- the chip (hidden until reserved) ---
+    const chip = document.createElement('div');
+    chip.className = 'player-chip';
+    chip.style.display = 'none';
 
-    // pass chip + label so we can flip UI after successful reserve
-    openModal(currentDay, teeTime, chosen, slotIndex, select, chip, chipLabel);
-  });
+    const chipLabel = document.createElement('span');
+    chipLabel.className = 'chip-label';
+    chip.appendChild(chipLabel);
 
-  row.appendChild(select);
-  row.appendChild(chip);
-  return row;
-}
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = 'Remove';
+    chip.appendChild(removeBtn);
+
+    // Remove handler -> /reserve/cancel
+    removeBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const player = selectedPlayers[currentDay][teeTime]?.[slotIndex];
+      if (!player) return;
+
+      if (!confirm(`Remove ${player.first_name} ${player.last_name} from ${teeTime}?`)) return;
+
+      // Ask for email so we can send a cancellation confirmation
+      const emailInput = prompt("Enter your email to receive a cancellation confirmation:");
+      if (emailInput === null) return; // user hit cancel
+      const email = (emailInput || "").trim();
+      if (!email) {
+        alert("Email is required to receive a cancellation confirmation.");
+        return;
+      }
+
+      try {
+        const res = await fetch('/reserve/cancel', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            day: currentDay,
+            tee_time: teeTime,
+            first_name: player.first_name,
+            last_name: player.last_name,
+            slot: slotIndex,
+            email
+          })
+        });
+        const data = await res.json().catch(()=> ({}));
+        if (!res.ok) { alert(data.error || 'Failed to cancel'); return; }
+
+        // flip UI back to "empty"
+        if (selectedPlayers[currentDay][teeTime]) {
+          selectedPlayers[currentDay][teeTime][slotIndex] = null;
+        }
+        select.dataset.locked = '';
+        select.disabled = false;
+        select.value = '';
+        select.style.display = '';      // show select again
+        chip.style.display = 'none';    // hide chip
+
+        // keep search cache fresh
+        resCache[currentDay] = (resCache[currentDay] || []).filter(r =>
+          !(r.tee_time === teeTime &&
+            (r.first_name||'').toLowerCase() === (player.first_name||'').toLowerCase() &&
+            (r.last_name||'').toLowerCase()  === (player.last_name||'').toLowerCase() &&
+            String(r.slot ?? '') === String(slotIndex))
+        );
+      } catch {
+        alert('Failed to cancel');
+      }
+    });
+
+    // When a player is chosen -> open modal
+    select.addEventListener('change', () => {
+      if (!select.value) return;
+      if (select.dataset.locked === '1') return;
+
+      const chosen = JSON.parse(select.value);
+      selectedPlayers[currentDay][teeTime] = selectedPlayers[currentDay][teeTime] || [];
+
+      const alreadyUsed = Object.values(selectedPlayers[currentDay])
+        .flat()
+        .some(p => p &&
+             norm(p.first_name) === norm(chosen.first_name) &&
+             norm(p.last_name)  === norm(chosen.last_name) &&
+             p !== selectedPlayers[currentDay][teeTime][slotIndex]);
+
+      if (alreadyUsed) {
+        alert("Player already assigned a tee time!");
+        select.value = "";
+        return;
+      }
+
+      // pass chip + label so we can flip UI after successful reserve
+      openModal(currentDay, teeTime, chosen, slotIndex, select, chip, chipLabel);
+    });
+
+    row.appendChild(select);
+    row.appendChild(chip);
+    return row;
+  }
 
   async function loadPlayers() {
-  try {
-    const res = await fetch('/load_players', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ day: currentDay })
-    });
-    if (!res.ok) throw new Error('Failed to load players');
-    playersData = await res.json();
+    try {
+      const res = await fetch('/load_players', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day: currentDay })
+      });
+      if (!res.ok) throw new Error('Failed to load players');
+      playersData = await res.json();
 
-    const teeTimes = generateTeeTimes();
-    teeTimeGrid.innerHTML = "";
-    teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
+      const teeTimes = generateTeeTimes();
+      teeTimeGrid.innerHTML = "";
+      teeTimes.forEach(t => teeTimeGrid.appendChild(createTeeTimeElement(t)));
 
-    // Preload any existing reservations from the sheet
-    await loadReservations();
-  } catch (e) {
-    console.error(e);
-    teeTimeGrid.innerHTML = "<p style='text-align:center;color:#111;background:rgba(255,255,255,.7);border:1px solid #000;border-radius:8px;padding:12px;'>Unable to load players.</p>";
+      // Preload any existing reservations from the sheet
+      await loadReservations();
+    } catch (e) {
+      console.error(e);
+      teeTimeGrid.innerHTML = "<p style='text-align:center;color:#111;background:rgba(255,255,255,.7);border:1px solid #000;border-radius:8px;padding:12px;'>Unable to load players.</p>";
+    }
   }
-}
 
-async function loadReservations() {
-  try {
-    const res = await fetch('/load_reservations', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify({ day: currentDay })
-    });
-    const reservations = await res.json();
-    if (!Array.isArray(reservations)) return;
+  async function loadReservations(day = currentDay) {
+    try {
+      const res = await fetch('/load_reservations', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ day })
+      });
+      const reservations = await res.json();
+      if (!Array.isArray(reservations)) return;
 
-    reservations.forEach(r => {
-      // find tee-time container by its label
-      const container = [...teeTimeGrid.querySelectorAll('.tee-time')]
-        .find(div => div.querySelector('.time-label')?.textContent === r.tee_time);
-      if (!container) return;
+      // cache for search, then only continue with DOM work if this is the visible day
+      resCache[day] = reservations;
+      if (day !== currentDay) return;
 
-      const rows = container.querySelectorAll('.slot-row');
+      reservations.forEach(r => {
+        // find tee-time container by its label
+        const container = [...teeTimeGrid.querySelectorAll('.tee-time')]
+          .find(div => div.querySelector('.time-label')?.textContent === r.tee_time);
+        if (!container) return;
 
-      // inside loadReservations(), before deciding idx:
-let idxRaw = (r.slot ?? -1);
-let idx = (typeof idxRaw === 'string') ? parseInt(idxRaw, 10) : idxRaw;
-if (!Number.isFinite(idx)) idx = -1;
+        const rows = container.querySelectorAll('.slot-row');
 
-if (idx < 0) {
-  for (let i = 0; i < rows.length; i++) {
-    const s = rows[i].querySelector('select');
-    if (s && s.dataset.locked !== '1') { idx = i; break; }
+        // Determine slot (accept number or string)
+        let idxRaw = (r.slot ?? -1);
+        let idx = (typeof idxRaw === 'string') ? parseInt(idxRaw, 10) : idxRaw;
+        if (!Number.isFinite(idx)) idx = -1;
+
+        if (idx < 0) {
+          for (let i = 0; i < rows.length; i++) {
+            const s = rows[i].querySelector('select');
+            if (s && s.dataset.locked !== '1') { idx = i; break; }
+          }
+          if (idx < 0) idx = 0;
+        }
+
+        const row = rows[idx];
+        if (!row) return;
+
+        const select = row.querySelector('select');
+        const chipEl = row.querySelector('.player-chip');
+        const chipLabel = row.querySelector('.chip-label');
+
+        // Set label text
+        const label = formatLabel(r.first_name, r.last_name, r.country);
+
+        // Try to select the matching option so the value is consistent in the DOM
+        let matchedValue = '';
+        for (const opt of select.options) {
+          if (opt.textContent.trim() === label) { matchedValue = opt.value; break; }
+        }
+        if (matchedValue) select.value = matchedValue;
+
+        // Lock + flip UI to chip
+        select.dataset.locked = '1';
+        select.disabled = true;
+        select.style.display = 'none';
+        chipLabel.textContent = label;
+        chipEl.style.display = 'inline-flex';
+
+        // Keep local model in sync
+        selectedPlayers[currentDay][r.tee_time] = selectedPlayers[currentDay][r.tee_time] || [];
+        selectedPlayers[currentDay][r.tee_time][idx] = {
+          first_name: (r.first_name || '').trim(),
+          last_name:  (r.last_name  || '').trim(),
+          country:    (r.country    || '').trim()
+        };
+      });
+    } catch (e) {
+      console.error('loadReservations failed', e);
+    }
   }
-  if (idx < 0) idx = 0;
-}
 
-      const row = rows[idx];
-      if (!row) return;
-
-      const select = row.querySelector('select');
-      const chipEl = row.querySelector('.player-chip');
-      const chipLabel = row.querySelector('.chip-label');
-
-      // Set label text (trim each piece to avoid stray spaces)
-      const label = formatLabel(r.first_name, r.last_name, r.country);
-
-      // Try to select the matching option so the value is consistent in the DOM
-      let matchedValue = '';
-      for (const opt of select.options) {
-        if (opt.textContent.trim() === label) { matchedValue = opt.value; break; }
-      }
-      if (matchedValue) select.value = matchedValue;
-
-      // Lock + flip UI to chip
-      select.dataset.locked = '1';
-      select.disabled = true;
-      select.style.display = 'none';
-      chipLabel.textContent = label;
-      chipEl.style.display = 'inline-flex';
-
-      // Keep local model in sync
-      selectedPlayers[currentDay][r.tee_time] = selectedPlayers[currentDay][r.tee_time] || [];
-      selectedPlayers[currentDay][r.tee_time][idx] = {
-  first_name: (r.first_name || '').trim(),
-  last_name:  (r.last_name  || '').trim(),
-  country:    (r.country    || '').trim()
-};
-    });
-  } catch (e) {
-    console.error('loadReservations failed', e);
-  }
-}
-
+  // initial load
   loadPlayers();
-
 </script>
 </body>
 </html>

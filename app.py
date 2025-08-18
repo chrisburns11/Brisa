@@ -202,7 +202,7 @@ def reserve():
         players_text = f"{last_name}, {first_name} ({country})".strip()
         try:
             if email:
-                msg = Message("Brisa Tee Time Confirmation", recipients=[email])
+                msg = Message("USGA Practice Round Tee Time Confirmation", recipients=[email])
                 msg.body = (
                     f"Hi {first_name},\n\n"
                     f"You're confirmed for {tee_time} on {day}.\n\n"
@@ -216,7 +216,7 @@ def reserve():
             phone = data.get("phone")
             if phone and twilio_client and TWILIO_NUMBER:
                 twilio_client.messages.create(
-                    body=f"Hi {first_name}, you're confirmed for {tee_time} on {day} with Brisa.",
+                    body=f"Hi {first_name}, you're confirmed for {tee_time} on {day}.",
                     from_=TWILIO_NUMBER,
                     to=phone,
                 )
@@ -288,7 +288,7 @@ def reserve_cancel():
         try:
             email_to = email_override or reservation_email
             if email_to:
-                msg = Message("Brisa Tee Time Cancellation", recipients=[email_to])
+                msg = Message("USGA Practice Round Tee Time Cancellation", recipients=[email_to])
                 msg.body = (
                     f"Hi {first_name},\n\n"
                     f"Your tee time at {tee_time} on {day} has been cancelled.\n\n"
@@ -394,7 +394,7 @@ def send_confirmation():
     )
 
     try:
-        msg = Message("Brisa Tee Time Confirmation", recipients=[recipient_email])
+        msg = Message("USGA Practice Round Tee Time Confirmation", recipients=[recipient_email])
         msg.body = (
             f"Hi {recipient_name},\n\n"
             f"You're confirmed for {tee_time}.\n\n"
@@ -407,7 +407,7 @@ def send_confirmation():
     try:
         if phone and twilio_client and TWILIO_NUMBER:
             twilio_client.messages.create(
-                body=f"Hi {recipient_name}, you're confirmed for {tee_time} with Brisa. Good luck!",
+                body=f"Hi {recipient_name}, you're confirmed for {tee_time}. Good luck!",
                 from_=TWILIO_NUMBER,
                 to=phone,
             )
